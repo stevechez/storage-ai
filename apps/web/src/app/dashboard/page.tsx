@@ -1,61 +1,41 @@
-export default function DashboardPage() {
+import { createAdminClient } from '@/lib/supabase/admin';
 
-return (
+const FACILITY_ID = '11111111-1111-1111-1111-111111111111';
 
-<div className="p-8">
+export default async function DashboardPage() {
+	const supabase = createAdminClient();
 
-<h1 className="text-4xl font-bold">
-StorageAI Dashboard
-</h1>
+	const { data: calls } = await supabase
+		.from('calls')
+		.select('*')
+		.eq('facility_id', FACILITY_ID)
+		.order('created_at', { ascending: false });
 
+	return (
+		<main className="max-w-5xl mx-auto p-8">
+			<h1 className="text-4xl font-bold mb-2">StorageAI</h1>
 
-<div className="grid grid-cols-3 gap-6 mt-8">
+			<p className="text-gray-500 mb-10">Operator Dashboard</p>
 
+			<div className="mb-10">
+				<div className="text-sm text-gray-500">Calls Answered</div>
 
-<div className="rounded-xl border p-6">
+				<div className="text-5xl font-bold">{calls?.length ?? 0}</div>
+			</div>
 
-<p className="text-sm text-muted-foreground">
-Calls Today
-</p>
+			<h2 className="text-2xl font-semibold mb-4">Recent Calls</h2>
 
-<p className="text-4xl font-bold">
-0
-</p>
+			<div className="space-y-4">
+				{calls?.map(call => (
+					<div key={call.id} className="border rounded-lg p-4">
+						<div className="font-semibold">{call.caller_phone}</div>
 
-</div>
+						<div>{call.outcome}</div>
 
-
-<div className="rounded-xl border p-6">
-
-<p className="text-sm text-muted-foreground">
-Leads Generated
-</p>
-
-<p className="text-4xl font-bold">
-0
-</p>
-
-</div>
-
-
-
-<div className="rounded-xl border p-6">
-
-<p className="text-sm text-muted-foreground">
-Rentals Started
-</p>
-
-<p className="text-4xl font-bold">
-0
-</p>
-
-</div>
-
-
-</div>
-
-</div>
-
-)
-
+						<div className="text-sm text-gray-500 mt-2">{call.transcript}</div>
+					</div>
+				))}
+			</div>
+		</main>
+	);
 }
