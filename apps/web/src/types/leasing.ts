@@ -9,3 +9,37 @@ export interface LeasingOpportunity {
 	priority: OpportunityPriority;
 	recommendedAction: string;
 }
+
+export interface MorningReport {
+	highPriorityCount: number;
+	mediumPriorityCount: number;
+	rentalRequests: number;
+	pricingQuestions: number;
+	availabilityRequests: number;
+	recommendedFollowUp: LeasingOpportunity | null;
+}
+
+export type OpportunityStatus = 'new' | 'contacted' | 'converted' | 'lost';
+
+export interface FollowUp {
+	callId: string;
+	callerPhone: string | null;
+	opportunity: LeasingOpportunity;
+	status: OpportunityStatus;
+}
+
+export type ResponseChannel = 'phone' | 'sms' | 'email';
+
+export interface ResponseDraft {
+	callId: string;
+	channel: ResponseChannel;
+	message: string;
+}
+
+export type OpportunityOutcome = 'pending' | 'converted' | 'lost';
+
+export interface OutcomeSummary {
+	pending: number;
+	converted: number;
+	lost: number;
+}

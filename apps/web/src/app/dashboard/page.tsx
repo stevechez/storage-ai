@@ -1,10 +1,18 @@
 import { getCurrentFacility } from '@/lib/storage/facility';
 import { getMorningReport } from '@/lib/storage/report';
+import { getFollowUps } from '@/lib/storage/follow-up';
+import { summarizeOutcomes } from '@/lib/storage/outcomes';
+import { MorningReport } from '@/components/storage/morning-report';
+import { LeasingQueue } from '@/components/storage/leasing-queue';
+import { OutcomeSummary } from '@/components/storage/outcome-summary';
 
 export default async function DashboardPage() {
 	const facility = await getCurrentFacility();
 
-	const report = await getMorningReport(facility.id);
+	const [report, followUps] = await Promise.all([
+		getMorningReport(facility.id),
+		getFollowUps(facility.id),
+	]);
 
 	return (
 		<main className="max-w-5xl mx-auto p-8">
@@ -12,45 +20,15 @@ export default async function DashboardPage() {
 
 			<p className="text-gray-500 mb-10">StorageAI Operator Dashboard</p>
 
-			<section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-				<div className="border rounded-lg p-5">
-					<div className="text-sm text-gray-500">Calls Answered</div>
+			<MorningReport report={report} />
 
-					<div className="text-3xl font-bold">{report.totalCalls}</div>
-				</div>
-
-				<div className="border rounded-lg p-5">
-					<div className="text-sm text-gray-500">Interested Renters</div>
-
-					<div className="text-3xl font-bold">{report.interested}</div>
-				</div>
-
-				<div className="border rounded-lg p-5">
-					<div className="text-sm text-gray-500">Pricing Questions</div>
-
-					<div className="text-3xl font-bold">{report.pricing}</div>
-				</div>
-
-				<div className="border rounded-lg p-5">
-					<div className="text-sm text-gray-500">Follow Ups</div>
-
-					<div className="text-3xl font-bold">{report.followUps}</div>
-				</div>
-			</section>
-
-			<h2 className="text-2xl font-semibold mb-4">Recent Calls</h2>
-
-			<div className="space-y-4">
-				{report.recentCalls.map(call => (
-					<div key={call.id} className="border rounded-lg p-4">
-						<div className="font-semibold">{call.caller_phone}</div>
-
-						<div>{call.outcome}</div>
-
-						<div className="text-sm text-gray-500 mt-2">{call.transcript}</div>
-					</div>
-				))}
+			<div className="mb-10">
+				<OutcomeSummary summary={summarizeOutcomes(followUps)} />
 			</div>
+
+			<h2 className="text-2xl font-semibold mb-4">Leasing Queue</h2>
+
+			<LeasingQueue followUps={followUps} />
 		</main>
 	);
 }
