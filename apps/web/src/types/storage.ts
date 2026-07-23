@@ -25,3 +25,23 @@ export interface Lead {
     created_at: string;
 
 }
+
+export interface Facility {
+
+	id: string;
+
+	name: string;
+
+	address?: string | null;
+
+	city?: string | null;
+
+	state?: string | null;
+
+	pms_provider?: string | null;
+
+	pms_facility_id?: string | null;
+
+	created_at: string;
+
+}
