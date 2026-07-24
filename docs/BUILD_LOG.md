@@ -419,3 +419,9 @@ Added `vercel.json` at the repo root:
 ### Verification
 
 Confirmed `vercel.json` doesn't affect local builds (it's only read by Vercel's platform) — `pnpm build` still succeeds identically. Could not verify this resolves the actual Vercel deployment directly — no Vercel account/API access from this environment — so this is the best-informed fix based on Vercel's documented Turborepo-monorepo-with-root-level-Root-Directory pattern, not something confirmed against a real deploy. Next deploy attempt is the real test.
+
+### Correction — this fix was wrong, reverted
+
+The next deploy attempt failed differently: `Error: No Next.js version detected... check your Root Directory setting matches the directory of your package.json file.` The build's own printed `devDependencies` (`turbo`, `typescript`) confirmed Root Directory is genuinely the repo root, not `apps/web` — those are the *root* package.json's devDependencies, not `apps/web`'s (`next`, `react`, etc.). Declaring `"framework": "nextjs"` in `vercel.json` while Root Directory stays at the repo root was the direct cause: Vercel validated the Next.js version against the root `package.json`, which has no `next` dependency (only `apps/web/package.json` does).
+
+Confirmed `apps/web` has no `workspace:` dependency on `packages/database` — it's fully self-contained. That makes the correct fix simpler than the one just applied: set Vercel's **Root Directory to `apps/web`** (a dashboard setting, not something this repo can control) and let Next.js zero-config detection handle everything, rather than keeping Root Directory at the repo root with custom `buildCommand`/`outputDirectory` overrides. Deleted `vercel.json` entirely — once Root Directory is corrected, no override should be needed. `turbo.json`'s env-var fix from the previous entry is left in place regardless (still correct for local `turbo build`/`turbo dev`, harmless either way even if Vercel no longer invokes turbo directly for this app).
