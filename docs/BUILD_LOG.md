@@ -288,3 +288,49 @@ Most of this sprint's acceptance criteria were already satisfied by earlier spri
 ### Outcome
 
 The demo now discloses itself as a demonstration without ever implying the facility itself is fake — the disclosure and the realistic identity no longer compete with each other in the same sentence.
+
+## Sprint 17 — First Operator Validation
+
+Date: 2026-07-24
+
+### Goal
+
+Not more code — a repeatable process for learning whether a real independent storage operator would pay for this. Implementation owner for this sprint is the founder; Claude's role was preparing the supporting materials, not conducting the actual conversations.
+
+### Completed
+
+Created `docs/customer-validation/`:
+
+- `IDEAL_CUSTOMER_PROFILE.md` — target profile (independent/family-owned, 1–5 facilities, no call center), who to avoid initially (REITs, enterprise chains), and concrete ways to find real prospects
+- `DEMO_SCRIPT.md` — a 5-minute script walking the actual live dashboard (not a hypothetical one), built around the real after-hours seed example (the 9pm/10x15/ASAP call) as the through-line from problem to business value
+- `OUTREACH_AND_DISCOVERY.md` — a short, low-pressure outreach message template and the discovery question sequence, with follow-ups and guidance on what to record after each call
+- `PROSPECT_LIST.md` — a tracking template with status stages, deliberately left unfilled: there's no way to know which real independent facilities exist near the founder, so inventing sample entries would be actively misleading rather than useful
+
+### Challenges
+
+- The natural failure mode for this sprint is treating list-building or script-polishing as a substitute for the actual conversations. Noted directly in `PROSPECT_LIST.md`: the bar is a handful of real conversations, not a long researched list
+
+### Outcome
+
+No application code changed. The founder now has what's needed to start real operator conversations; the next entry in this log should reflect what was actually learned, not what was prepared.
+
+## Sprint 18 — Operator Feedback Loop
+
+Date: 2026-07-24
+
+### Goal
+
+Turn real operator conversations into product decisions — evidence over assumption.
+
+### Status: templates prepared, sprint not actually completable yet
+
+Confirmed directly before doing anything further: no real operator conversations have happened yet (Sprint 17's `PROSPECT_LIST.md` is still the empty template). Sprint 18's own success criteria require real feedback to have been collected and at least one assumption confirmed or challenged — neither is possible without those conversations, so this sprint is **not** being marked done. Fabricating operator quotes or assumption evidence to check the boxes would defeat the entire point of the sprint.
+
+### Completed
+
+- `docs/customer-validation/OPERATOR_FEEDBACK.md` — a reusable per-conversation template (facility type/size, current call process, pain points, existing tools, strong reactions, objections, requested features, buying signal), ready to fill in after real conversations
+- `docs/customer-validation/ASSUMPTION_LOG.md` — pre-populated with the actual load-bearing assumptions behind everything built in Sprints 1–17 (pulled from real product decisions, not invented for this file) — e.g. that after-hours missed calls are painful enough to matter, that a suggested response draft is trusted enough to use, that the daily workflow shape matches how operators actually work. Evidence/Decision columns are blank, waiting on real conversations
+
+### Outcome
+
+Sprint 18 stays open until real conversations happen. Come back to this entry once `OPERATOR_FEEDBACK.md` has real entries and update it with what was actually learned — that's the deliverable, not the templates.
