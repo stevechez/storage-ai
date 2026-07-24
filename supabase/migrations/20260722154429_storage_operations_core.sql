@@ -2,7 +2,7 @@
 
 create table leads (
 
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default extensions.uuid_generate_v4(),
 
     facility_id uuid
         references facilities(id)
@@ -30,7 +30,7 @@ create table leads (
 
 create table conversations (
 
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default extensions.uuid_generate_v4(),
 
     facility_id uuid
         references facilities(id)
@@ -64,7 +64,7 @@ create table conversations (
 
 create table units (
 
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default extensions.uuid_generate_v4(),
 
     facility_id uuid
         references facilities(id)

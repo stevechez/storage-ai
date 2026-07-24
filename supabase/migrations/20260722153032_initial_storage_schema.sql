@@ -1,8 +1,10 @@
+create extension if not exists "uuid-ossp" with schema extensions;
+
 create extension if not exists "uuid-ossp";
 
 
 create table organizations (
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default extensions.uuid_generate_v4(),
 
     name text not null,
 
@@ -30,7 +32,7 @@ create table profiles (
 
 create table facilities (
 
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default extensions.uuid_generate_v4(),
 
     organization_id uuid
         references organizations(id)
@@ -57,7 +59,7 @@ create table facilities (
 
 create table calls (
 
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default extensions.uuid_generate_v4(),
 
     facility_id uuid
         references facilities(id)

@@ -1,7 +1,7 @@
 -- Sprint 19: capture real interest from the public marketing site
 
 create table early_access_signups (
-	id uuid primary key default uuid_generate_v4(),
+	id uuid primary key default extensions.uuid_generate_v4(),
 
 	name text not null,
 
