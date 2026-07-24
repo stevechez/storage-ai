@@ -451,3 +451,45 @@ Per the sprint's own "one question per section" requirement, audited what alread
 ### Outcome
 
 The homepage now walks a skeptical visitor through all three doubts identified by the external review, in order, right before the ask — without inventing a single customer, testimonial, or unsupported claim.
+
+## Add-on — Pricing section
+
+Date: 2026-07-24
+
+### Goal
+
+Add real, transparent pricing to the landing page — flagged as the top remaining trust blocker ("is the demo a sales trap?").
+
+### Completed
+
+- New `PricingSection` (`#pricing`): Single Facility ($199/mo founder price, 5 listed features, CTA to Early Access) and Multi-Facility Operators ("Contact us", same Early Access form as the destination — no fabricated separate contact channel), plus a short ROI line folded directly into the section rather than a separate one
+- Placed right after the existing `RoiSection`, before `IntegrationConfidence`/`TrustSection`/`EarlyAccess` — deliberately anchors the cost-of-a-missed-rental math first, then reveals the actual number, so $199/mo lands as small by comparison rather than the first thing a visitor sees before understanding the product
+- Added "Pricing" to `Navbar`
+
+### Design decisions
+
+- Kept the existing `RoiSection` distinct rather than merging it into `PricingSection` — one builds the pain/value case before any number is shown, the other reveals the actual price; collapsing them would lose the anchoring effect
+- "Contact us" for multi-facility operators points at the same real Early Access form, consistent with the earlier decision not to invent a placeholder contact email
+
+### Outcome
+
+The pricing question is now answered directly and transparently, with the founder-pricing framing ("early partners get rewarded for going first," not "this is permanent") stated plainly rather than implied.
+
+## Add-on — Founder Program pricing revision
+
+Date: 2026-07-24
+
+### Goal
+
+Reframe "Founder Pricing" as a "Founder Program" pilot — a trial says "try this software," a pilot says "help us prove this solves a real problem," which fits a pre-first-customer product better.
+
+### Completed
+
+- Rewrote the Founder tier: `$99` first month → `$199/mo` founder pricing locked in (bridges "willing to test this" into "buying a product," rather than a full free trial, which tends to attract visitors asking "is this interesting?" instead of "how do I get value?")
+- Updated the included-features list to: Setup assistance, Direct founder access, Help evaluating missed call opportunities, Locked-in founder pricing
+- Added a "Your first month" success-checklist block: the four questions the pilot exists to answer (calls analyzed, renters showing interest, follow-ups identified, opportunities that would've been missed), closing with "if the answers don't show real value, don't continue" — reframes the pilot as measuring a business outcome rather than testing software
+- Updated eyebrow/headline to "First 20 facilities only" / "A founder pilot, not just a free trial," and the CTA to "Apply for the founder program"
+
+### Outcome
+
+The pricing section now asks for a specific, bounded commitment in exchange for specific, bounded proof — not "try it and see," but "let's find out together, and if it doesn't work, stop."

@@ -10,6 +10,9 @@ export function Navbar() {
 				<a href="#early-stage" className="hover:text-ink">
 					Why trust it
 				</a>
+				<a href="#pricing" className="hover:text-ink">
+					Pricing
+				</a>
 			</div>
 
 			<a
