@@ -26,6 +26,7 @@ export interface FollowUp {
 	callerPhone: string | null;
 	opportunity: LeasingOpportunity;
 	status: OpportunityStatus;
+	createdAt: string;
 }
 
 export type ResponseChannel = 'phone' | 'sms' | 'email';
@@ -42,4 +43,10 @@ export interface OutcomeSummary {
 	pending: number;
 	converted: number;
 	lost: number;
+}
+
+export interface OperatorAction {
+	callId: string;
+	callerPhone: string | null;
+	opportunity: LeasingOpportunity;
 }

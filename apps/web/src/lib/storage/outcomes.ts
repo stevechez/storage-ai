@@ -15,3 +15,17 @@ export function summarizeOutcomes(followUps: FollowUp[]): OutcomeSummary {
 
 	return summary;
 }
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+export function summarizeRecentOutcomes(
+	followUps: FollowUp[],
+	now: Date = new Date(),
+	windowMs: number = ONE_DAY_MS,
+): OutcomeSummary {
+	const cutoff = now.getTime() - windowMs;
+
+	const recent = followUps.filter(followUp => new Date(followUp.createdAt).getTime() >= cutoff);
+
+	return summarizeOutcomes(recent);
+}

@@ -8,6 +8,7 @@ describe('buildFollowUp', () => {
 			caller_phone: '+15125550110',
 			transcript: 'Customer wants a 10x10 unit this weekend. What is the price?',
 			status: 'new',
+			created_at: '2026-07-23T12:00:00.000Z',
 		};
 
 		const followUp = buildFollowUp(call);
@@ -16,6 +17,7 @@ describe('buildFollowUp', () => {
 			callId: 'call-1',
 			callerPhone: '+15125550110',
 			status: 'new',
+			createdAt: '2026-07-23T12:00:00.000Z',
 			opportunity: {
 				intent: 'rental',
 				unitSize: '10x10',
@@ -27,7 +29,13 @@ describe('buildFollowUp', () => {
 	});
 
 	it('treats a missing transcript as a general opportunity and preserves the stored status', () => {
-		const call = { id: 'call-2', caller_phone: null, transcript: null, status: 'contacted' };
+		const call = {
+			id: 'call-2',
+			caller_phone: null,
+			transcript: null,
+			status: 'contacted',
+			created_at: '2026-07-23T08:00:00.000Z',
+		};
 
 		const followUp = buildFollowUp(call);
 

@@ -57,6 +57,7 @@ describe('generateResponseDraft', () => {
 			callId: 'call-1',
 			callerPhone: '+15125550110',
 			status: 'new',
+			createdAt: '2026-07-23T12:00:00.000Z',
 			opportunity: {
 				intent: 'rental',
 				unitSize: '10x10',

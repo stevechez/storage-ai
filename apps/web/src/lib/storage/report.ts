@@ -48,7 +48,8 @@ export async function getMorningReport(facilityId: string) {
 		throw error;
 	}
 
-	const opportunities = calls.map(call => analyzeTranscript(call.transcript ?? ''));
+	const unresolvedCalls = calls.filter(call => call.status === 'new' || call.status === 'contacted');
+	const opportunities = unresolvedCalls.map(call => analyzeTranscript(call.transcript ?? ''));
 
 	return {
 		...summarizeOpportunities(opportunities),

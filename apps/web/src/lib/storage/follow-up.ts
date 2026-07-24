@@ -7,6 +7,7 @@ interface CallRow {
 	caller_phone: string | null;
 	transcript: string | null;
 	status: string;
+	created_at: string;
 }
 
 export function buildFollowUp(call: CallRow): FollowUp {
@@ -15,6 +16,7 @@ export function buildFollowUp(call: CallRow): FollowUp {
 		callerPhone: call.caller_phone,
 		opportunity: analyzeTranscript(call.transcript ?? ''),
 		status: call.status as OpportunityStatus,
+		createdAt: call.created_at,
 	};
 }
 

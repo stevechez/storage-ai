@@ -144,3 +144,78 @@ Answer "which opportunities became rentals?" so the business impact of StorageAI
 ### Outcome
 
 StorageAI can now state a measurable outcome across all identified opportunities, computed from the same status data operators already maintain — the summary and the per-call detail are always consistent because they come from the same source.
+
+## Sprint 11 — Operator Command Center
+
+Date: 2026-07-23
+
+### Goal
+
+Turn the dashboard into a daily command view: who needs attention, why, what to do next, and what happened recently — all in seconds.
+
+### Completed
+
+- Added `createdAt` to `FollowUp` (surfacing `calls.created_at`, already fetched, not new persistence) so results can be time-windowed
+- Added `OperatorAction` type and `lib/storage/actions.ts`: `getTodaysActions()` (pure, test-first) — filters follow-ups to unresolved (`new`/`contacted`), sorts by priority, and overrides the action with an urgency phrase, same technique as Sprint 7's follow-up override
+- Added `lib/storage/outcomes.ts`: `summarizeRecentOutcomes()` (pure, test-first) — a 24-hour rolling window over `summarizeOutcomes()`
+- Added `OperatorActions` (renders Today's Actions) and `OperatorSummary` (the "Good Morning" line: high-priority count, needs-follow-up count, converted-recently count) components
+- Gave `OutcomeSummary` a `title` prop so it could be reused for "Recent Results" instead of building a near-duplicate component
+- Restructured the dashboard: dropped Morning Brief's "Today's First Call" (now superseded by the full Today's Actions list), renamed "Leasing Queue" → "Active Opportunities" (same component/data), replaced the all-time Conversion Summary with the recent-windowed "Recent Results"
+
+### Challenges
+
+- The spec's three sections overlapped with what Sprints 7–10 already built (a single top recommendation, the queue, an all-time outcome summary). Building all three as literally-new additions would have produced duplicate status/priority concepts on one page — explicitly flagged as a failure condition in the spec's own checklist. Resolved by consolidating rather than adding: same underlying data, reorganized into the three-section structure the sprint asked for
+- Verified against live (not synthetic) data that the 24-hour window behaves correctly: the original demo call, now ~28 hours old, correctly dropped out of "Recent Results" while still correctly appearing in "Today's Actions" since it remains unresolved regardless of age
+
+### Outcome
+
+The dashboard now leads with "what should I do next," not a log of everything that happened. All three sections are derived from data that already existed — no new tables, no new status concepts, no new selector UI.
+
+## Sprint 12 — Operator Demo Readiness
+
+Date: 2026-07-23
+
+### Goal
+
+Make StorageAI demo-ready: a prospect should understand the value within five minutes, using real numbers rather than explanatory copy.
+
+### Completed
+
+- Richer demo data (`supabase/migrations/20260723160802_seed_sprint_12_demo_calls.sql`): 7 new calls bringing the total to 11, covering after-hours/weekend calls (the core missed-call thesis, previously absent from the demo data), varied intents/timelines/priorities, and — for the first time — a `lost` example, so every dashboard section shows a real, varied story instead of a thin, repetitive one
+- Replaced the generic "StorageAI Operator Dashboard" tagline with a real-numbers value statement ("N rental opportunities need attention today"), reusing the already-computed Today's Actions count rather than adding new copy or logic
+- Tightened empty-state copy on `OperatorActions` and `LeasingQueue` to explain what StorageAI does even when there's nothing to show, instead of a bare "nothing here" message
+- Added `DemoBanner`, a small labeled strip clarifying this is sample data for a prospect, not a real customer's live facility
+- Fixed a real inconsistency the richer data exposed: Morning Brief's "High Priority" tile counted opportunities from *all* calls (including already-converted/lost ones), while Good Morning's "High Priority Opportunities" (Sprint 11) only counts unresolved ones. With the old thin dataset these coincidentally matched; with realistic data they diverged (6 vs. 4) in exactly the "which number do I trust" way Sprint 12 is meant to eliminate. `getMorningReport()` now filters to unresolved calls before computing its breakdown, so both numbers — and `recommendedFollowUp`, which could previously have recommended calling an already-converted customer — are consistent
+
+### Challenges
+
+- The richer demo data itself surfaced the metric-consistency bug above; it wasn't visible before because the old dataset was too thin to expose the divergence
+
+### Outcome
+
+A prospect looking at the dashboard now sees a believable business story — including a loss, not just wins — and every number on the page means the same thing everywhere it appears.
+
+## Sprint 13 — First Customer Readiness
+
+Date: 2026-07-24
+
+### Goal
+
+Polish the existing workflow so a storage operator can sit through a five-minute demo and understand the value without explanation — refinement, not new features.
+
+### Completed
+
+- Added `lib/storage/format.ts`: `formatPhoneNumber()` (pure, test-first), formatting US numbers as `(512) 555-0110` instead of raw `+15125550110` everywhere a caller's phone is shown
+- Renamed the demo facility from "StorageAI Demo Facility" to "Lonestar Self Storage" (with a real-sounding address) via migration — a facility named after the product itself undercut a prospect picturing it as *their* facility
+- **Consolidated "Good Morning" and "Morning Brief" into one section.** Applying the sprint's own rubric ("if a section cannot answer its assigned question, simplify or remove it") to the current implementation: Morning Brief was supposed to answer "what happened overnight," but it showed a current-snapshot intent breakdown — nearly the same question Good Morning already answered, and after Sprint 12's consistency fix, its "High Priority" tile was now a literal duplicate of Good Morning's "High Priority Opportunities." Rather than build new "overnight activity" tracking (out of scope — refinement, not expansion), merged them: Good Morning now shows the headline numbers plus the Rental/Pricing/Availability breakdown as one section, one heading. `morning-report.tsx` and its "🔥 High Priority" tile were removed since they no longer added information
+- **Reordered dashboard sections** to match the sprint's own "Demo Story": Good Morning → Today's Actions → Active Opportunities → Recent Results — action and in-progress work now come before the outcome recap, instead of showing results before the work that produced them
+- Gave "Recent Results" its own section heading (previously the only section without one) and renamed its internal card label to "Last 24 Hours" so the heading and the card no longer say the same thing twice
+
+### Challenges
+
+- None new — this sprint mostly applied the "one question per section" test the spec itself provided to the actual implementation, which is what surfaced the Good Morning / Morning Brief overlap
+- Found two unrelated, unused files (`lib/storage/dashboard.ts`, `lib/storage/analytics.ts`) — an older, orphaned `getMorningReport()`/`getDashboardStats()` pair not imported anywhere. Left untouched as out of scope; flagged for cleanup
+
+### Outcome
+
+The dashboard now has one section per question, in the order the demo story is told, with consistent phone formatting and a facility identity a prospect can actually picture as their own.
