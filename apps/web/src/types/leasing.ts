@@ -50,3 +50,12 @@ export interface OperatorAction {
 	callerPhone: string | null;
 	opportunity: LeasingOpportunity;
 }
+
+export interface RevenueImpact {
+	identifiedCount: number;
+	convertedCount: number;
+	pendingCount: number;
+	assumedMonthlyRate: number;
+	estimatedMonthlyRevenue: number;
+	estimatedCapturedRevenue: number;
+}

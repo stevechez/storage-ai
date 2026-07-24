@@ -242,3 +242,49 @@ Increase credibility of the existing experience — no new capabilities, just re
 ### Outcome
 
 The application no longer shows any literal "this was scaffolded, not built" signals — the browser tab, the API route, and the codebase itself are clean of leftover prototype artifacts, without touching any working functionality.
+
+## Sprint 15 — Revenue Impact
+
+Date: 2026-07-24
+
+### Goal
+
+Answer the question every storage owner eventually asks — "is this helping me make more money?" — with a simple, honestly-labeled estimate rather than real financial reporting.
+
+### Completed
+
+- Added `RevenueImpact` type (`src/types/leasing.ts`)
+- Added `lib/storage/revenue.ts`: `estimateRevenueImpact()` and `formatEstimatedRevenue()` (both pure, test-first). `estimateRevenueImpact()` reuses `summarizeOutcomes()` rather than re-counting opportunities — no duplicate business logic
+- Added `RevenueImpactCard`, placed as the final section on the dashboard — the closing "here's what this is worth" statement
+- `formatEstimatedRevenue()` always prefixes amounts with `≈` so the estimate is visible in the number itself, not just in a caption
+
+### Design decisions
+
+- **Lost opportunities are excluded from every revenue figure.** `identifiedCount = converted + pending` — a lost opportunity never was and never will be revenue, so counting it would inflate the estimate and violate "estimate, don't fabricate"
+- **Two figures, not one.** The headline "Estimated Monthly Revenue" is `(converted + pending) × rate` — the total monthly revenue footprint the identified opportunities represent, matching the spec's own worked example. A secondary line, "≈$X already captured from converted rentals," is `converted × rate` — the realized-value figure that most directly answers the founder's validation question ("would this help justify paying for StorageAI")
+- **A single flat assumed rate** ($135/month, from the spec's own example), not a per-unit-size pricing model — real per-unit rates don't exist in the data, and building a size-to-price table would be a small forecasting engine, explicitly out of scope. The rate is a parameter (`estimateRevenueImpact(followUps, rate)`) so a future sprint with real facility pricing can pass it in without changing the function's logic
+- Every rendered instance of the estimate is labeled as such — "Estimated Monthly Revenue," the `≈` prefix, and a footer disclaimer ("not real billing data") — so nothing on the card could be mistaken for actual billing
+
+### Outcome
+
+The dashboard now closes with a concrete dollar figure grounded entirely in the existing opportunity/outcome data — no new persistence, no fabricated numbers, and every estimate clearly marked as one.
+
+## Sprint 16 — Operator Demo Mode
+
+Date: 2026-07-24
+
+### Goal
+
+Make a polished demo experience — where a prospect understands StorageAI's value without explanation.
+
+### Audit before building
+
+Most of this sprint's acceptance criteria were already satisfied by earlier sprints: the Demo Banner (Sprint 12), the realistic "Lonestar Self Storage" identity (Sprint 13), the section-by-section narrative ordering — Good Morning → Today's Actions → Active Opportunities (includes suggested responses) → Recent Results → Revenue Impact (Sprints 11/13/15) — and an audit of every dashboard/component string turned up no stray AI-hype language beyond the product name itself. Rather than build redundant new components, this sprint made the one real gap concrete.
+
+### Completed
+
+- Rewrote `DemoBanner`'s copy: it previously led with `"Demo Facility — ..."`, using "Demo Facility" as a quasi-label immediately before naming the real facility — undercutting "the operator should imagine it as their own facility" (this sprint's own stated goal for facility identity). Replaced with `"This is a live demonstration using sample leasing activity for {facilityName} — illustrating how StorageAI works on a real facility's calls."`, matching the sprint's own suggested banner copy while still disclosing clearly that it's a demo
+
+### Outcome
+
+The demo now discloses itself as a demonstration without ever implying the facility itself is fake — the disclosure and the realistic identity no longer compete with each other in the same sentence.

@@ -3,12 +3,14 @@ import { getMorningReport } from '@/lib/storage/report';
 import { getFollowUps } from '@/lib/storage/follow-up';
 import { getTodaysActions } from '@/lib/storage/actions';
 import { summarizeRecentOutcomes } from '@/lib/storage/outcomes';
+import { estimateRevenueImpact } from '@/lib/storage/revenue';
 import { LeasingQueue } from '@/components/storage/leasing-queue';
 import { OutcomeSummary } from '@/components/storage/outcome-summary';
 import { OperatorSummary } from '@/components/storage/operator-summary';
 import { OperatorActions } from '@/components/storage/operator-actions';
 import { OpportunitySummary } from '@/components/storage/opportunity-summary';
 import { DemoBanner } from '@/components/storage/demo-banner';
+import { RevenueImpactCard } from '@/components/storage/revenue-impact-card';
 
 export default async function DashboardPage() {
 	const facility = await getCurrentFacility();
@@ -62,10 +64,14 @@ export default async function DashboardPage() {
 				<LeasingQueue followUps={followUps} />
 			</section>
 
-			<section>
+			<section className="mb-10">
 				<h2 className="text-2xl font-semibold mb-4">Recent Results</h2>
 
 				<OutcomeSummary summary={recentOutcomes} title="Last 24 Hours" />
+			</section>
+
+			<section>
+				<RevenueImpactCard impact={estimateRevenueImpact(followUps)} />
 			</section>
 		</main>
 	);
