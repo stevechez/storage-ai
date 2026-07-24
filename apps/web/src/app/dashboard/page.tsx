@@ -12,6 +12,8 @@ import { OpportunitySummary } from '@/components/storage/opportunity-summary';
 import { DemoBanner } from '@/components/storage/demo-banner';
 import { RevenueImpactCard } from '@/components/storage/revenue-impact-card';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
 	const facility = await getCurrentFacility();
 

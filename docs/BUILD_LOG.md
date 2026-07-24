@@ -366,3 +366,28 @@ Every `components/marketing/*.tsx` file except `Navbar` was still the empty `ret
 ### Outcome
 
 The public site now tells the same story Sprints 11–16 already built into the dashboard, using real product examples throughout, with a working Early Access form that actually captures interest instead of just looking like it does.
+
+## Fix — Vercel build failure on /dashboard
+
+Date: 2026-07-24
+
+### Problem
+
+First Vercel deployment failed: `Export encountered an error on /dashboard/page`, with the real exception swallowed behind an opaque digest. Vercel also warned that `SUPABASE_SERVICE_ROLE_KEY` was "set on your Vercel project, but missing from turbo.json."
+
+### Root cause
+
+Confirmed rather than assumed: Turborepo 2.x (installed: 2.10.6) defaults to **strict env mode** — a task only receives the env vars explicitly listed in its `env` array, plus a small set of auto-inferred `NEXT_PUBLIC_*` vars for recognized frameworks like Next.js. `turbo.json`'s `build` task declared no `env` array at all. `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` were auto-inferred and got through; `SUPABASE_SERVICE_ROLE_KEY` (not `NEXT_PUBLIC_`-prefixed) was not, and was stripped from the build process entirely — exactly matching the warning naming that one variable specifically. `/dashboard` has no `dynamic` export, so Next.js attempted to statically prerender it at build time, which meant executing `getCurrentFacility()` during `next build` with `createAdminClient()` receiving `undefined` for the service role key — `supabase-js` throws constructing a client with an invalid key, and that thrown error is what became the opaque digest.
+
+### Fix
+
+- `turbo.json`: added `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` to the `build` task's `env` array
+- `apps/web/src/app/dashboard/page.tsx`: added `export const dynamic = 'force-dynamic'` — correct regardless of the env issue, since this page is live operational data (calls, opportunities, follow-ups) that should never be frozen into a static build artifact
+
+### Verification
+
+Reproduced the fix locally with the exact command Vercel runs (`pnpm build` → `turbo build`), not just `next build` in isolation. Confirmed via the build's own route table: `/dashboard` now shows as `ƒ (Dynamic, server-rendered on demand)` instead of being included in static generation, and the turbo env-var warning is gone.
+
+### Still needed (not something this fix can do)
+
+`turbo.json` declaring the variable *name* only controls whether Turborepo passes it through during the build — it doesn't supply the *value*. The actual production Supabase credentials still need to be configured directly in the Vercel project's Environment Variables settings; nothing in this repo (including `.env.local`) reaches Vercel's build automatically.
