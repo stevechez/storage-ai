@@ -21,3 +21,12 @@ After each operator conversation (logged in `OPERATOR_FEEDBACK.md`), come back h
 - **Decision** — one of: `Confirmed`, `Challenged`, `Partially confirmed`, or `Needs more data` — plus what that means for what gets built next
 
 An assumption with no rows filled in after several conversations is itself a signal — it may mean the conversations aren't surfacing it, or that it's not actually decision-relevant and can be dropped from this list.
+
+## Sprint 21 target
+
+Speak with 5 independent operators, using the same core questions each time (`OUTREACH_AND_DISCOVERY.md`'s Sprint 21 script). By the end:
+
+- [ ] At least 3 assumptions above marked `Confirmed` (or `Partially confirmed`)
+- [ ] At least 3 assumptions above marked `Challenged`
+
+Note: an assumption can land in both buckets across different conversations — that's fine, and worth noting, not averaging away. If every operator says they'd never use this, that's still a successful sprint: it's evidence, not failure. The failure mode is not hearing "no" — it's spending months building features nobody asked for.

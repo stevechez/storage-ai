@@ -12,9 +12,22 @@ interface CallEvent {
 }
 
 export async function POST(request: Request) {
-	const supabase = createAdminClient();
+	let event: CallEvent;
 
-	const event = (await request.json()) as CallEvent;
+	try {
+		event = await request.json();
+	} catch {
+		return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
+	}
+
+	if (typeof event.facilityId !== 'string' || typeof event.caller !== 'string') {
+		return NextResponse.json(
+			{ success: false, error: 'facilityId and caller are required' },
+			{ status: 400 },
+		);
+	}
+
+	const supabase = createAdminClient();
 
 	const { data: call, error } = await supabase
 		.from('calls')

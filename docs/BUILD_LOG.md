@@ -493,3 +493,71 @@ Reframe "Founder Pricing" as a "Founder Program" pilot — a trial says "try thi
 ### Outcome
 
 The pricing section now asks for a specific, bounded commitment in exchange for specific, bounded proof — not "try it and see," but "let's find out together, and if it doesn't work, stop."
+
+## Sprint 21 / Sprint 22 — Customer Discovery (prepared, not completed)
+
+Date: 2026-07-24
+
+### Goal
+
+Replace assumptions with evidence: 5 real conversations with independent storage operators, same core questions each time, at least 3 assumptions confirmed and at least 3 challenged.
+
+### Status: still zero real conversations
+
+Sprint 22's own handoff states it plainly: "Sprints 17–21 prepared us for customer conversations, but no real operator interviews have yet occurred." That makes this the fourth sprint in a row (17, 18, 21, 22) aimed at exactly this same unmet goal. Rather than create a fourth parallel set of near-duplicate templates for Sprint 22, folded its genuine refinements into the existing Sprint 21 materials in `docs/customer-validation/`:
+
+- Added 2 more discovery questions to `OUTREACH_AND_DISCOVERY.md` (current software, whether they've looked for a solution before)
+- Added Sprint 22's post-conversation reflection questions (what surprised me, what assumption was wrong, what language they used vs. didn't, what felt emotional, would this change the homepage)
+- Added the synthesis/governance requirement: summary of all conversations, top five insights, top three operator-suggested product changes, and a Sprint 23 recommendation based entirely on that evidence — explicitly, no feature work should start until that review happens
+- `ASSUMPTION_LOG.md`: added the explicit Sprint 21 target (≥3 confirmed, ≥3 challenged) as a checklist
+- `OPERATOR_FEEDBACK.md`: added a "Quote worth remembering" field to the per-conversation template, and a Sprint 21 summary rollup section (biggest surprise / biggest objection / feature requested / quote worth remembering)
+
+Not marking this complete — the templates were already about as ready as they can be after Sprint 21; what's missing isn't more preparation, it's the actual conversations. No further document refinement should be treated as progress on this until real conversations happen.
+
+## Phase 24B — Reliability Audit (Critical + High)
+
+Date: 2026-07-24
+
+### Goal
+
+Harden the already-built product before the first founder pilot customers — not feature work, not customer discovery. Explicitly scoped to reliability, since bugs are real regardless of whether an operator conversation has happened yet.
+
+### Audit method
+
+Could not reach actual production logs/advisors — `mcp__Supabase__list_projects` only returns projects tied to this Claude.ai account, and the real production project (`hscgmcfbresuqwiuzdfw`, confirmed from `.env.local` and the live dashboard) isn't among them. Audited instead via full code review plus direct structural inspection of the local Supabase schema (RLS, constraints, indexes) via `docker exec`, which mirrors production's schema even without access to production's live logs.
+
+### Findings (prioritized)
+
+**Critical**
+1. Zero `error.tsx` anywhere in the app — any unhandled exception showed Next.js's raw default error screen, not something in StorageAI's voice
+2. `app/api/events/call/route.ts` didn't guard `request.json()` — malformed body threw unhandled instead of hitting the route's own clean error response
+
+**High**
+3. `getCurrentFacility()`'s `.single()` has no fallback — compounds with #1 (no boundary to catch it gracefully)
+4. `updateFollowUpStatusAction` (Mark Contacted/Converted/Lost) had no error handling — a DB failure would crash instead of failing quietly
+
+**Medium/Low (not fixed this pass, listed for later)**
+5. No `loading.tsx` for `/dashboard` — blank page during data fetch on a slow connection
+6. No index on `calls.facility_id` — full scan on every dashboard load, invisible at demo scale
+7. `early_access_signups.email` has no unique constraint
+8. `leads`, `units`, `conversations` tables (and `conversations`' orphaned RLS policies) are fully unreferenced by any code — dead schema from before Sprint 6
+9. `lib/supabase/client.ts`/`server.ts` (anon-key clients) are defined but never imported anywhere — not a current risk (RLS-with-no-policies means zero anon access by default), just unused scaffolding for future auth work
+
+### Completed (Critical + High)
+
+- `app/error.tsx` (new) — app-wide error boundary
+- `app/dashboard/error.tsx` (new) — dashboard-scoped, more specific message
+- `app/api/events/call/route.ts` — `request.json()` wrapped in try/catch (→ clean `400` on malformed body), added validation that `facilityId`/`caller` are present
+- `app/dashboard/actions.ts` — `updateFollowUpStatus` wrapped in try/catch; failure now logs server-side and returns quietly instead of crashing. Trade-off, kept deliberately minimal: failure isn't surfaced to the operator — a visible indicator would mean converting the status buttons to `useActionState`, more scope than "fix the crash"
+
+### Verified live, not just compiled
+
+Malformed JSON → clean `400`. Missing required fields → clean `400`. Valid request → still `200`, inserts correctly. Dashboard still loads (`200`) after adding both error boundaries.
+
+### Unplanned but more important finding: local dev was writing to production
+
+While verifying the API fix with a real POST, the test row didn't appear in the local database. Investigation: `.env.local` had both a `#LOCAL` and a `#PRODUCTION` block with the same keys duplicated. Next.js's env loader (`@next/env`, built on `dotenv`) resolves duplicate keys with **last occurrence winning**, so the production block silently overrode local for every request — `pnpm dev` had been running against the real production database the entire session, not the disposable local one. Confirmed via a direct query against production with the real service-role key, deleted the stray test row from production, removed the `#PRODUCTION` block from `.env.local` (user confirmed), restarted the dev server, and re-verified with a second test POST that it now correctly lands in the local database. This was a real, silent risk for any local development that writes data — not something this reliability audit set out to find, but the most consequential thing it caught.
+
+### Outcome
+
+The four most trust-relevant reliability gaps are fixed and verified against real requests, not just typechecked. Medium/Low items are logged for later. Local development environment now actually points at local infrastructure.

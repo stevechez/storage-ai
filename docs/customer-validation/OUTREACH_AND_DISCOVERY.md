@@ -1,6 +1,56 @@
-# Outreach Message & Discovery Questions — Sprint 17
+# Outreach Message & Discovery Questions — Sprint 17 / Sprint 21 / Sprint 22
 
-Goal for this sprint: start conversations and learn. Not close deals.
+Goal: start conversations and learn. Not close deals. As of Sprint 22, this is still the goal — no real operator conversation has happened yet across four sprints aimed at exactly this (17, 18, 21, 22). More document refinement won't substitute for actually having one; this file is as ready as it needs to be.
+
+## The live conversation script
+
+Sprint 17's email template below still works for getting the 15 minutes. But for the actual conversation, use this sharper framing (refined across Sprints 21 and 22) — it's a genuine improvement, not just an alternative:
+
+**Rule #1: you are not selling StorageAI. You are investigating storage operations.** If they ask what you're building, show them. If they don't ask, that's fine — the conversation was still a success.
+
+**Opening** (said out loud, in person or on the phone — more authentic than reading a script):
+
+> Hi, my name is Steve. I'm a software engineer researching how independent self-storage facilities handle after-hours rental calls. I'm not selling anything today — I was hoping to ask a few questions about how your operation works. Would you have five minutes?
+
+**Discovery questions** — conversational, not a checklist to read verbatim:
+
+1. How many locations do you operate?
+2. Who normally answers the phone?
+3. What happens after hours?
+4. Do renters leave voicemails?
+5. How quickly do you usually return those calls?
+6. What's the biggest headache around phone calls?
+7. Have you ever wondered how many rentals you lose after closing?
+8. If you could magically automate one part of handling calls, what would it be?
+9. What software do you currently use? (added in Sprint 22 — reveals their PMS and how automated their world already is)
+10. Have you ever looked for a solution to this problem before? (added in Sprint 22 — tells you if this is a felt problem or a hypothetical one)
+
+Ask naturally, don't rush, and follow whatever's actually interesting rather than marching through the list. Then stop talking.
+
+**Only if they ask "why are you asking?"**, answer:
+
+> I'm building software to help independent storage operators understand and prioritize renter calls. I'm still validating whether I'm solving the right problem.
+
+No pitch. No mention of AI. No dashboard. No pricing.
+
+**Optional demo — only if they ask.** Then, and only then:
+
+> Would you mind if I showed you something I've been working on?
+
+That question, asked after they've asked first, is a completely different psychological moment than leading with a demo.
+
+**The question to hold in your head throughout:** "What does this operator know that I don't?" That's the job this sprint — curious, not persuasive.
+
+**Ask yourself after every conversation** (Sprint 22):
+
+- What surprised me?
+- What assumption was wrong?
+- What language did they naturally use?
+- What words did they never use?
+- What problem felt emotional?
+- Would I change the homepage because of this conversation?
+
+**When 5 conversations are done**, the deliverable isn't more templates — it's a synthesis: a summary of all conversations, the top five insights, the top three product changes operators actually suggested, and a recommendation for the next sprint based entirely on this evidence, logged in `OPERATOR_FEEDBACK.md`'s Sprint 21 summary section. No feature work should start until that review happens.
 
 ## Outreach message (email or LinkedIn DM)
 

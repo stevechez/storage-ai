@@ -4,6 +4,22 @@ One entry per conversation. Capture what they actually said, in their words wher
 
 Copy the template below for each new conversation.
 
+## Sprint 21 summary (fill in once all 5 conversations are done)
+
+Success here is not "got a customer." Success is walking away with a true sentence you didn't have before — even if every operator says they'd never use this.
+
+**Biggest surprise:**
+(What contradicted what this product has assumed since Sprint 1?)
+
+**Biggest objection:**
+(The strongest, most-repeated reason to hesitate, in an operator's own words)
+
+**Feature requested:**
+(What operators actually asked for, unprompted — not what you offered them)
+
+**Quote worth remembering:**
+(One sentence, verbatim, that should shape Sprint 22)
+
 ---
 
 ## [Facility name] — [Date]
@@ -31,6 +47,9 @@ Copy the template below for each new conversation.
 
 **Buying signal:**
 (Did they indicate they'd actually pay for this, and under what condition? Or did they not get there?)
+
+**Quote worth remembering:**
+(One sentence, as close to verbatim as you can get it, that stuck with you)
 
 ---
 

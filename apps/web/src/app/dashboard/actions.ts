@@ -12,7 +12,12 @@ export async function updateFollowUpStatusAction(formData: FormData) {
 		return;
 	}
 
-	await updateFollowUpStatus(callId, status as OpportunityStatus);
+	try {
+		await updateFollowUpStatus(callId, status as OpportunityStatus);
+	} catch (error) {
+		console.error('Failed to update follow-up status', error);
+		return;
+	}
 
 	revalidatePath('/dashboard');
 }

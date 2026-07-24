@@ -36,8 +36,8 @@ export function PricingSection() {
 
 						<ul className="mt-6 space-y-2 text-sm text-steel">
 							{FOUNDER_PROGRAM_FEATURES.map(feature => (
-								<li key={feature} className="flex items-start gap-2">
-									<span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-signal" aria-hidden="true" />
+								<li key={feature} className="flex items-center gap-2">
+									<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal" aria-hidden="true" />
 									{feature}
 								</li>
 							))}
@@ -75,8 +75,8 @@ export function PricingSection() {
 					<p className="mt-3 font-semibold text-ink">During your first month, we&apos;ll help you answer:</p>
 					<ul className="mt-4 space-y-2 text-sm text-steel">
 						{SUCCESS_QUESTIONS.map(question => (
-							<li key={question} className="flex items-start gap-2">
-								<span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-signal" aria-hidden="true" />
+							<li key={question} className="flex items-center gap-2">
+								<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal" aria-hidden="true" />
 								{question}
 							</li>
 						))}
