@@ -391,3 +391,31 @@ Reproduced the fix locally with the exact command Vercel runs (`pnpm build` → 
 ### Still needed (not something this fix can do)
 
 `turbo.json` declaring the variable *name* only controls whether Turborepo passes it through during the build — it doesn't supply the *value*. The actual production Supabase credentials still need to be configured directly in the Vercel project's Environment Variables settings; nothing in this repo (including `.env.local`) reaches Vercel's build automatically.
+
+## Fix — Vercel "No Output Directory named public" after a successful build
+
+Date: 2026-07-24
+
+### Problem
+
+After the env/dynamic-rendering fix above, the build itself succeeded on Vercel — route table matched the local one exactly — but deployment then failed with `Error: No Output Directory named "public" found after the Build completed.`
+
+### Root cause
+
+No `vercel.json` existed anywhere in the repo, so Vercel's output-directory detection was entirely dependent on its dashboard project settings. Confirmed the project's Root Directory is the monorepo root (not `apps/web`), which is Vercel's default when a project is first imported without manual changes. With Root Directory at the repo root and no framework/output override, Vercel has no way to know the Next.js build output lives at `apps/web/.next` — it falls back to expecting a flat static `public/` folder at the root, which doesn't exist.
+
+### Fix
+
+Added `vercel.json` at the repo root:
+
+```json
+{
+	"framework": "nextjs",
+	"buildCommand": "turbo build",
+	"outputDirectory": "apps/web/.next"
+}
+```
+
+### Verification
+
+Confirmed `vercel.json` doesn't affect local builds (it's only read by Vercel's platform) — `pnpm build` still succeeds identically. Could not verify this resolves the actual Vercel deployment directly — no Vercel account/API access from this environment — so this is the best-informed fix based on Vercel's documented Turborepo-monorepo-with-root-level-Root-Directory pattern, not something confirmed against a real deploy. Next deploy attempt is the real test.
