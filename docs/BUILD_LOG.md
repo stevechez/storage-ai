@@ -334,3 +334,35 @@ Confirmed directly before doing anything further: no real operator conversations
 ### Outcome
 
 Sprint 18 stays open until real conversations happen. Come back to this entry once `OPERATOR_FEEDBACK.md` has real entries and update it with what was actually learned — that's the deliverable, not the templates.
+
+## Sprint 19 — Public Product Experience
+
+Date: 2026-07-24
+
+### Goal
+
+Make the marketing site match the operator dashboard's level of polish — every CTA works, no placeholder content, nothing implied that isn't actually built.
+
+### Audit before building
+
+Every `components/marketing/*.tsx` file except `Navbar` was still the empty `return null;` stub added back in Sprint 8 to unblock the dev server. `Navbar`'s "Join Early Access" button linked to `#early-access`, which had no destination — exactly the bug the sprint doc named. This was effectively building the landing page for real, not patching it. Also found and fixed a real, previously-unnoticed bug: `globals.css` hardcoded `body { font-family: Arial, ...}`, completely overriding the Geist fonts already loaded via `next/font` — this affected the whole app, not just marketing.
+
+### Completed
+
+- **Design system** (`globals.css`, `layout.tsx`): added a concrete/ink/steel/signal/dusk/lamp color palette drawn from self-storage's own material world (steel roll-up doors, safety-orange signage, a facility at night), Archivo as a display face (Geist Sans/Mono retained for body/utility, so the marketing site and dashboard visibly share a type family), fixed the font-family bug, added `prefers-reduced-motion` handling
+- **Hero** — headline + a live-feeling artifact showing the product's real thesis: a "9:42 PM · Missed Call" card crossfading into the actual recommended-action framing, built from the real seed example (10x15, ASAP, High priority)
+- **Problem section** — the one deliberately dark section, built around "a renter calls at 9pm, nobody answers, they call the next facility"
+- **How it works** — four real, accurate steps (Capture → Prioritize → Respond → Measure) mapped directly onto what's actually built; numbered because it's a genuine sequence, not decoration
+- **Benefits** — four cards using the sprint's own example phrases almost verbatim ("Recover missed rental opportunities," etc.), each grounded in a real, shipped capability
+- **Early Access** — a real, working signup form (`app/actions.ts`, a Server Action using `useActionState`), not a `mailto:` or dead anchor. New `early_access_signups` table (migration `20260724061253`)
+- **Footer** — real internal links only; deliberately did *not* invent a placeholder contact email, since a fake `.example` address would violate the exact "no placeholder content" principle this sprint is about — "Contact the founder" points at the same real Early Access form instead
+- Fixed `page.tsx`'s layout wrapper, which previously constrained everything to a centered `max-w-3xl` box (unworkable for full-width sections), and removed an unused `next/image` import
+
+### Challenges
+
+- The Early Access form's first end-to-end test failed with a permission error: `service_role` grants from Sprint 2's setup migration only covered tables that existed at the time, not new ones. Added an explicit grant to the new table's migration and re-verified the insert succeeds
+- No browser automation tool is available in this environment, so mobile/responsive layout was verified by reviewing the Tailwind breakpoint classes (grid columns collapsing, CTAs wrapping), not by an actual rendered screenshot — noted honestly rather than claimed as fully verified
+
+### Outcome
+
+The public site now tells the same story Sprints 11–16 already built into the dashboard, using real product examples throughout, with a working Early Access form that actually captures interest instead of just looking like it does.
