@@ -36,11 +36,11 @@ Engineering rules:
 
 Current sprint:
 
-Sprint 6 — The First Decision
+Sprint 14 — First Customer Trust
 
 Goal:
 
-Transform call transcripts into leasing opportunities and recommended actions.
+Increase customer confidence and credibility of the existing experience — refinement, not new capabilities. See docs/BUILD_LOG.md for the full sprint history.
 
 Do not implement future integrations yet:
 
