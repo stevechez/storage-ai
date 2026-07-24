@@ -425,3 +425,29 @@ Confirmed `vercel.json` doesn't affect local builds (it's only read by Vercel's 
 The next deploy attempt failed differently: `Error: No Next.js version detected... check your Root Directory setting matches the directory of your package.json file.` The build's own printed `devDependencies` (`turbo`, `typescript`) confirmed Root Directory is genuinely the repo root, not `apps/web` — those are the *root* package.json's devDependencies, not `apps/web`'s (`next`, `react`, etc.). Declaring `"framework": "nextjs"` in `vercel.json` while Root Directory stays at the repo root was the direct cause: Vercel validated the Next.js version against the root `package.json`, which has no `next` dependency (only `apps/web/package.json` does).
 
 Confirmed `apps/web` has no `workspace:` dependency on `packages/database` — it's fully self-contained. That makes the correct fix simpler than the one just applied: set Vercel's **Root Directory to `apps/web`** (a dashboard setting, not something this repo can control) and let Next.js zero-config detection handle everything, rather than keeping Root Directory at the repo root with custom `buildCommand`/`outputDirectory` overrides. Deleted `vercel.json` entirely — once Root Directory is corrected, no override should be needed. `turbo.json`'s env-var fix from the previous entry is left in place regardless (still correct for local `turbo build`/`turbo dev`, harmless either way even if Vercel no longer invokes turbo directly for this app).
+
+## Sprint 20 — Trust Sprint
+
+Date: 2026-07-24
+
+### Goal
+
+Move a visitor from "I understand what this does" to "I trust this enough to ask for a demo," following external cold-visitor review of the deployed homepage.
+
+### Audit before building
+
+Per the sprint's own "one question per section" requirement, audited what already existed before touching anything: Hero already avoided AI-hype framing and stated customer/problem/outcome clearly — no rebuild needed. The Problem section already contained almost exactly the review's "strongest message discovered" ("you never know you lost a 9pm call") nearly verbatim. How It Works already avoided over-explaining AI. Real redundancy found in `BenefitsSection`: three of its four cards substantially restated How It Works' four steps as outcomes (Capture→"recover missed opportunities", Prioritize→"know who needs follow-up", Measure→"measure revenue impact"). Integration confidence and a dedicated trust section didn't exist anywhere — the one honest "early access" framing line was buried inside the signup form itself, arriving after skepticism would already need addressing, not before.
+
+### Completed
+
+- Deleted `BenefitsSection` (redundant, per the audit above)
+- Added three new sections, each answering exactly one of the three skeptic questions identified by the external review, placed after How It Works and before the CTA:
+  - `IntegrationConfidence` ("Will this disrupt my operation?") — no new hardware, no phone replacement, works with existing workflow
+  - `TrustSection` ("Is this real?") — honest early-access framing per the sprint's explicit instruction: no invented customers, no fake testimonials, "this is early access" instead of pretending otherwise
+  - `RoiSection` ("What does this cost me?") — the $100/mo × 24 months = $2,400 lost-revenue framing, reframing "cost" as "revenue already being lost," not a calculator
+- Updated `Navbar`'s second link (previously "Benefits" → `#benefits`) to "Why trust it" → `#early-stage`
+- Trimmed the Early Access section's intro line, which previously restated the same "small number of early operators" message now covered by the new dedicated Trust section
+
+### Outcome
+
+The homepage now walks a skeptical visitor through all three doubts identified by the external review, in order, right before the ask — without inventing a single customer, testimonial, or unsupported claim.

@@ -2,7 +2,9 @@ import { Navbar } from '@/components/marketing/navbar';
 import { Hero } from '@/components/marketing/hero';
 import { ProblemSection } from '@/components/marketing/problem-section';
 import { HowItWorks } from '@/components/marketing/how-it-works';
-import { BenefitsSection } from '@/components/marketing/benefits-section';
+import { IntegrationConfidence } from '@/components/marketing/integration-confidence';
+import { TrustSection } from '@/components/marketing/trust-section';
+import { RoiSection } from '@/components/marketing/roi-section';
 import { EarlyAccess } from '@/components/marketing/early-access';
 import { Footer } from '@/components/marketing/footer';
 
@@ -14,7 +16,9 @@ export default function Home() {
 				<Hero />
 				<ProblemSection />
 				<HowItWorks />
-				<BenefitsSection />
+				<IntegrationConfidence />
+				<TrustSection />
+				<RoiSection />
 				<EarlyAccess />
 			</main>
 			<Footer />

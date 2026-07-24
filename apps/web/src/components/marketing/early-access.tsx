@@ -16,8 +16,8 @@ export function EarlyAccess() {
 					Be one of the first facilities to try it.
 				</h2>
 				<p className="mt-4 text-concrete/70">
-					We&apos;re working directly with a small number of independent operators before opening
-					this up more broadly. Tell us about your facility and we&apos;ll reach out.
+					Tell us about your facility and we&apos;ll reach out — no sales pitch, just a real
+					conversation about whether this fits how you run things.
 				</p>
 
 				{state.status === 'success' ? (

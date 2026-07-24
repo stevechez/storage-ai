@@ -7,8 +7,8 @@ export function Navbar() {
 				<a href="#how-it-works" className="hover:text-ink">
 					How it works
 				</a>
-				<a href="#benefits" className="hover:text-ink">
-					Benefits
+				<a href="#early-stage" className="hover:text-ink">
+					Why trust it
 				</a>
 			</div>
 
