@@ -820,3 +820,49 @@ Only 6 `'use client'` components exist in the entire app: 2 are required Next.js
 ### Outcome
 
 The app was already fast — every warm local measurement came in under 100ms, and the one place real time goes (network + hosted DB round trips on the live deployment) isn't something this phase's Non-Goals allow addressing anyway. The one genuine inefficiency found, a duplicated database query with mostly-dead output, is gone, the already-known missing index is now in place and its impact is measured rather than assumed, and everything not worth touching yet is documented instead of built speculatively.
+
+## Phase 35 — Founder Support & Operational Resilience
+
+Date: 2026-07-24/25
+
+### Goal
+
+Not a feature or performance phase — can the founder diagnose, recover from, and continue operating confidently through a real problem during the first founder cohort? Reviewed recovery paths, logging, data integrity, and wrote the backup/recovery and daily-operations documentation this all assumes exists.
+
+### Completed — Task 1: operational recovery review
+
+Traced all four critical workflows against the real code and, where possible, real failure conditions rather than reading and assuming:
+
+- **Manual call logging** — failure modes and recovery already well documented (`ONBOARDING_RUNBOOK.md` §5), reconfirmed accurate.
+- **Dashboard loading** — triggered a real failure (`?facility=` pointing at a nonexistent UUID) against both the dev server and a production build. Confirmed live: Next.js automatically logs the underlying Postgres error server-side (`PGRST116: The result contains 0 rows`) with zero app code needed, and the client error boundary (`dashboard/error.tsx`) is correctly wired via React's error-digest propagation. Noted a real tooling limit: `curl` can't confirm what the error boundary visually renders, since that's client-hydrated — verifying that requires an actual browser, which wasn't available in this environment. Documented honestly rather than claimed as verified.
+- **AI analysis** — reconfirmed `analyzeTranscript()` has no failure mode requiring recovery (no external call, pure sync regex over a string) — matches what `ONBOARDING_RUNBOOK.md` already said.
+- **Facility onboarding** — read `scripts/onboard-facility.mjs` closely: it already prints the orphaned organization ID if the facility insert fails partway, a real, already-existing self-documenting recovery aid, not a gap.
+
+**Real fix found and made:** `updateFollowUpStatus()` silently succeeded with zero rows affected when given a stale/nonexistent call ID — confirmed directly via `psql` (`UPDATE 0`, no error) before fixing. Added a `.select('id')` + empty-result check so this now throws and surfaces through the existing Phase 31 error-display path instead of failing invisibly. Verified against the real local database (bad ID throws, real ID still updates and was reverted cleanly after the test).
+
+### Completed — Task 2: logging review
+
+Every real failure path logs via `console.error` with a consistent, human-readable prefix; confirmed zero `console.log`/`debug` noise anywhere in the app. Confirmed no sensitive values (phone numbers, transcripts, secrets) appear in any log call — every log site prints either a fixed label plus the Supabase error object (metadata only) or a caught `Error`. Confirmed logs are actionable by triggering a real error and reading the exact output. One documented gap: no persistent log archive beyond Vercel's default Function Log retention — explicitly not fixed, since adding a logging service is exactly what this phase's Non-Goals rule out.
+
+### Completed — Task 3: data integrity review
+
+- Calls-to-facility association is FK-enforced (`on delete cascade`) and always server-set from a client-supplied `facilityId` — found and documented (not fixed) that there's no check tying this to an authenticated identity, because there's no auth system yet; correct for the current private-link trust model, revisit only when real auth work begins.
+- Status transitions are backstopped by a DB `CHECK` constraint, but found and documented that `'converted'`/`'lost'` aren't enforced as terminal — a call can be moved backward via the UI. Not fixed — a product-behavior decision, not a bug, out of scope for a resilience-only phase.
+- Revenue metrics are always derived fresh from `calls.status` at read time by a pure function — confirmed nothing is cached or stored that could drift or corrupt.
+- Confirmed structurally, not just by inspection, that "AI analysis failed but the call record exists" can't happen — there's no separate analysis-write step at all; `analyzeTranscript()` only ever runs at read time against the stored transcript.
+
+### Completed — Task 4: backup & recovery documentation
+
+`docs/operations/BACKUP_RECOVERY.md` — database backup (local vs. production, including an honest note that this phase's Supabase MCP connection is tied to a different account and couldn't verify the real project's actual backup tier, so that's flagged for Steve to confirm directly rather than guessed at), environment variable backup (found and documented that `apps/web/.env.production.local` **does not currently exist on disk** — the onboarding script would refuse to run right now until it's recreated; this is real current state, not a hypothetical), repository recovery, deployment recovery (captured the hard-won Vercel Root Directory = `apps/web` fix from the Sprint 20-era incident in writing so it's never painfully rediscovered), and a disaster recovery checklist tying it all together.
+
+### Completed — Task 5: founder operations playbook
+
+`docs/operations/FOUNDER_OPERATIONS.md` — daily review, weekly review, before/after onboarding a facility, responding to bugs, recording product feedback, and how to update `BUILD_LOG.md`/`TECH_DEBT_REGISTER.md`. Points to existing docs rather than duplicating them, consistent with Phase 29's single-source-of-truth discipline.
+
+### Verification
+
+`tsc --noEmit`, `eslint`, and the full Vitest suite (33/33) pass. The `updateFollowUpStatus` fix was verified against the real local database rather than assumed. The dashboard error-boundary wiring was verified as far as `curl` can confirm (server-side logging, correct RSC error propagation); full visual confirmation would need a real browser, which this environment doesn't have — documented as a limitation rather than asserted as fully checked.
+
+### Outcome
+
+The workflows that matter most were already more resilient than assumed — onboarding already had a self-recovery hint built in, AI analysis structurally can't leave inconsistent records, and error logging was already accurate and clean. The one real silent-failure gap found (stale-ID status updates) is fixed and verified. Everything else is now written down instead of living in one person's memory — including the uncomfortable but true fact that the production onboarding credentials file doesn't currently exist.

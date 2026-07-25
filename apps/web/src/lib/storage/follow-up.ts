@@ -39,9 +39,13 @@ export async function getFollowUps(facilityId: string): Promise<FollowUp[]> {
 export async function updateFollowUpStatus(callId: string, status: OpportunityStatus): Promise<void> {
 	const supabase = createAdminClient();
 
-	const { error } = await supabase.from('calls').update({ status }).eq('id', callId);
+	const { data, error } = await supabase.from('calls').update({ status }).eq('id', callId).select('id');
 
 	if (error) {
 		throw error;
+	}
+
+	if (!data || data.length === 0) {
+		throw new Error(`No call found with id ${callId}`);
 	}
 }
