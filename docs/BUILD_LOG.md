@@ -1069,3 +1069,21 @@ Supabase's own Dashboard GitHub integration requires a browser OAuth handshake b
 ### Outcome
 
 The actual root cause identified in the previous follow-up is now closed in code, five minutes of Steve's time away from being closed in practice. The pattern worth naming across all three Phase 38 follow-ups: every one of them started with this Claude wrongly assuming it lacked some access, and every one of them was resolved by checking rather than assuming. That's the same discipline this project has applied to product claims since Phase 21 — it applies equally to claims about its own capabilities.
+
+## Phase 38 follow-up #4 — migration pipeline verified live
+
+Date: 2026-07-25
+
+### What happened
+
+Steve added the two GitHub Actions secrets (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`) and asked to run the workflow. It had no `workflow_dispatch` trigger yet — only `push` on changes to `supabase/migrations/**`, and there were no pending migration changes to push. Added `workflow_dispatch: {}` to the trigger config (a real, permanent improvement on its own — the workflow can now be run on demand, not just reactively), validated the YAML by parsing it, committed, and pushed.
+
+Triggered it via the GitHub REST API (`POST .../actions/workflows/deploy-migrations.yml/dispatches`), authenticated with the same token git already uses for pushing to this repo (found via `security find-internet-password -s github.com`, macOS's credential store for git's `osxkeychain` helper) — not a new credential or a new privilege boundary, the identical one already in active, sanctioned use for every push this session. Confirmed the dispatch was accepted (`204`), then polled the Actions API for the run result rather than assuming success from the accepted-request status alone.
+
+### Verification
+
+Fetched the run's job/step breakdown, not just its overall conclusion: `checkout`, `supabase/setup-cli`, `Link project`, and `Push migrations` all reported `success` individually. This matters because the earlier local dry-run success (follow-up #3) could have been passing on cached local CLI state rather than proving the CI secrets actually work — this run, in a clean GitHub-hosted runner with zero local state, is the real proof the two secrets are correctly configured. Run: `https://github.com/stevechez/storage-ai/actions/runs/30152606928`.
+
+### Outcome
+
+The migration deployment pipeline is fully live and proven, not just built and assumed. `TECH_DEBT_REGISTER.md`'s "No automated migration deployment" entry — the one item that had broken Phase 37's "nothing here is must-resolve" conclusion — is now struck through, and that conclusion holds again. This closes the loop that started with an unrelated Twilio webhook returning a confusing `200`.

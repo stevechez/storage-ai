@@ -6,8 +6,7 @@ Captured, not fixed (unless struck through). Started during the Phase 24B reliab
 
 Every remaining open item below, re-ranked by actual product readiness rather than discovery order. One real conclusion worth stating plainly: nothing in this register is "must resolve before first founder customer" — every item that was actually customer-blocking has already been fixed in the phase it was found, which is why nothing here has ever carried a "High" priority.
 
-**Must resolve before first founder customer:** the original Phase 37 conclusion ("none") no longer holds while this is still pending activation — see "No automated migration deployment" below.
-- No automated migration deployment (production schema drift) — workflow built, **pending two GitHub repo secrets before it's live**
+**Must resolve before first founder customer:** the original Phase 37 conclusion ("none") holds again — the one item that broke it (below) is now fully resolved, not just built.
 
 **Can wait until after first customer** (each explicitly gated on real usage supplying evidence that doesn't exist yet):
 - `'converted'`/`'lost'` are not enforced as terminal statuses
@@ -24,19 +23,12 @@ Every remaining open item below, re-ranked by actual product readiness rather th
 
 ## Deployment
 
-### No automated migration deployment — production schema silently drifted for ~10 phases
-**Risk:** High — this is the one item in this register that's actually caused real, if narrowly-averted, harm
-**User impact:** Discovered Phase 38 while debugging an unrelated Twilio issue: production's schema had been frozen since roughly Phase 27/28. Every migration since `20260724164308_add_facility_contact_fields.sql` had only ever been applied locally, never to the real hosted Supabase project — including `facilities.phone`/`.contact_name`/`.contact_email`, which `scripts/onboard-facility.mjs` requires. **The onboarding script would have failed on the first real signup**, and no phase since Phase 28 (including the Phase 30 "Production Readiness Review," which audited routes, RLS, and security but never ran the actual onboarding script against production) had caught it, because nothing exercises production's schema directly in normal operation.
+### ~~No automated migration deployment — production schema silently drifted for ~10 phases~~ — Fixed Phase 38
+Discovered while debugging an unrelated Twilio issue: production's schema had been frozen since roughly Phase 27/28, including missing the columns `scripts/onboard-facility.mjs` requires — meaning the onboarding script would have failed on a real signup, uncaught since Phase 28. Full incident writeup, including screenshotted verification queries, in `TWILIO_SETUP.md`'s "Production schema drift" section.
 
-Fixed for the drift that existed at time of discovery: all five missing migrations applied directly via the cloud SQL editor, verified via direct schema queries and a real signed webhook test (not assumed) — then reconciled the migration *tracking table* itself, which didn't know those five had been applied since they were run as raw SQL rather than through Supabase's migration system (`supabase migration repair --status applied --linked`, confirmed via `supabase migration list` afterward showing local/remote in sync for all 15 migrations).
+Fixed in three parts: (1) applied the five missing migrations directly against production, verified via schema queries and a real signed webhook test; (2) reconciled the migration tracking table itself via `supabase migration repair --status applied --linked`, since the migrations had been applied as raw SQL rather than through Supabase's migration system; (3) closed the structural root cause with `.github/workflows/deploy-migrations.yml`, which runs `supabase db push --linked` automatically on every push to `main` touching `supabase/migrations/**` — the CLI/CI equivalent of Supabase's Dashboard GitHub integration, which needs a browser OAuth handshake this Claude can't complete.
 
-**Structural fix — status: built, not yet active.** Supabase's own Dashboard-based GitHub integration requires a browser OAuth flow between Supabase and GitHub that this Claude can't complete. Built the equivalent instead: `.github/workflows/deploy-migrations.yml` runs `supabase db push --linked` against production automatically on every push to `main` that touches `supabase/migrations/**`. **Requires two GitHub repository secrets that only Steve can add** (Settings → Secrets and variables → Actions on the GitHub repo):
-- `SUPABASE_ACCESS_TOKEN` — generate at Supabase Dashboard → Account → Access Tokens
-- `SUPABASE_DB_PASSWORD` — the project's database password (Dashboard → Project Settings → Database; reset it there if unknown, since the app itself doesn't use the DB password, only the service role key, so resetting is safe)
-
-Until those secrets are added, the workflow will run and fail on the next migration push — not silently no-op. That's a deliberate improvement in itself: a loud CI failure is exactly what should have existed the whole time instead of quiet, unnoticed drift.
-**Estimated effort:** Small — two secrets, five minutes, no code changes needed
-**Priority:** High until the secrets are added and one real migration push confirms the workflow runs green; downgrade to resolved after that — see `TWILIO_SETUP.md`'s "Production schema drift" section for the full incident writeup, including the screenshotted verification queries
+**Verified live, not just built:** after the two required GitHub secrets (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`) were added, manually dispatched the workflow (`workflow_dispatch`, added for exactly this) via the GitHub API and confirmed every step — checkout, Supabase CLI setup, project link, migration push — completed successfully against production, using only the CI secrets with no local cached state involved. Run: `https://github.com/stevechez/storage-ai/actions/runs/30152606928`.
 
 ## Reliability
 
