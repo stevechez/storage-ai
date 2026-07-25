@@ -2,7 +2,7 @@
 
 ## organizations
 
-Represents a StorageAI customer company.
+Represents a IntelliLease customer company.
 
 ## facilities
 

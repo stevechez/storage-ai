@@ -7,7 +7,7 @@ export function TrustSection() {
 					This is early — and that&apos;s the point.
 				</h2>
 				<p className="mt-4 text-lg text-steel">
-					Built specifically for independent storage operators. StorageAI is currently working
+					Built specifically for independent storage operators. IntelliLease is currently working
 					directly with a small number of early facilities to eliminate missed rental
 					opportunities — not selling to everyone at once, and not pretending otherwise.
 				</p>

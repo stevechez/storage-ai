@@ -11,7 +11,7 @@ export function LeasingQueue({ followUps }: { followUps: FollowUp[] }) {
 	if (followUps.length === 0) {
 		return (
 			<Card className="text-gray-500">
-				No leasing opportunities yet. As soon as a customer calls, StorageAI will capture it here.
+				No leasing opportunities yet. As soon as a customer calls, IntelliLease will capture it here.
 			</Card>
 		);
 	}

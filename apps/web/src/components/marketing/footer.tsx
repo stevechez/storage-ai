@@ -38,7 +38,7 @@ export function Footer() {
 			<div className="mx-auto max-w-6xl">
 				<div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
 					<div className="col-span-2 sm:col-span-1">
-						<p className="font-display text-lg font-bold text-ink">StorageAI</p>
+						<p className="font-display text-lg font-bold text-ink">IntelliLease</p>
 						<p className="mt-1 text-sm text-steel">
 							A digital leasing manager for independent self-storage facilities.
 						</p>
@@ -50,7 +50,7 @@ export function Footer() {
 				</div>
 
 				<p className="mt-10 text-xs text-steel/70">
-					© {new Date().getFullYear()} StorageAI. Built for the operators who answer their own phones.
+					© {new Date().getFullYear()} IntelliLease. Built for the operators who answer their own phones.
 				</p>
 			</div>
 		</footer>

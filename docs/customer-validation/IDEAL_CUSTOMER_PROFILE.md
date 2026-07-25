@@ -10,7 +10,7 @@
 
 ## Why this profile
 
-These operators feel the core problem StorageAI solves most acutely:
+These operators feel the core problem IntelliLease solves most acutely:
 
 - The owner or a single employee is answering calls between running the office, walking the lot, and handling walk-ins — after-hours and during-hours calls both get missed.
 - They don't have budget or appetite for enterprise call-center software, but they do feel the lost-rental pain directly and personally (it's their own revenue, not a line item in a regional P&L).

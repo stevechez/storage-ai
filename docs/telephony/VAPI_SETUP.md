@@ -4,14 +4,14 @@ Phase 39. Written the same way `TWILIO_SETUP.md` was — so a future Steve (or t
 
 ## What this phase does and doesn't do
 
-A real phone call to the pilot number is now answered by a Vapi AI assistant instead of Phase 38's static "under founder testing" greeting. When the call ends, Vapi sends a webhook with the full transcript; StorageAI stores the raw conversation, then feeds the transcript through the *exact same* `logCall()` → `analyzeTranscript()` → dashboard pipeline that manual call logging has always used. A Vapi-sourced call and a manually-typed call are indistinguishable once they hit the dashboard — that's deliberate (Task 4's whole point).
+A real phone call to the pilot number is now answered by a Vapi AI assistant instead of Phase 38's static "under founder testing" greeting. When the call ends, Vapi sends a webhook with the full transcript; IntelliLease stores the raw conversation, then feeds the transcript through the *exact same* `logCall()` → `analyzeTranscript()` → dashboard pipeline that manual call logging has always used. A Vapi-sourced call and a manually-typed call are indistinguishable once they hit the dashboard — that's deliberate (Task 4's whole point).
 
 This phase does **not**: build outbound calling, SMS, PMS integration, payment processing, autonomous leasing, multilingual support, or a tuned/optimized prompt. See the handoff's own Non-Goals — all still apply.
 
 ## Architecture
 
 ```
-Phone Call → Twilio → Vapi Assistant → end-of-call webhook → StorageAI
+Phone Call → Twilio → Vapi Assistant → end-of-call webhook → IntelliLease
                                               │
                                               ├─ conversation_transcripts (raw, Task 3)
                                               └─ logCall() → analyzeTranscript() → dashboard (Task 4, reused unchanged)

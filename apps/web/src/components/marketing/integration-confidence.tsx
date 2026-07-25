@@ -7,7 +7,7 @@ export function IntegrationConfidence() {
 					Works with your existing phone workflow.
 				</h2>
 				<p className="mt-4 text-lg text-steel">
-					StorageAI helps you identify opportunities without requiring you to replace your current
+					IntelliLease helps you identify opportunities without requiring you to replace your current
 					systems. Nothing to install at the office, no new hardware, no phone lines to switch. Your
 					phone still rings the same way it does today.
 				</p>

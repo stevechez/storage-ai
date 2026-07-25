@@ -1,4 +1,4 @@
-# StorageAI System Architecture
+# IntelliLease System Architecture
 
 ## Current Architecture
 
@@ -40,7 +40,7 @@ Voice AI Agent
       |
       v
 
-StorageAI Orchestrator
+IntelliLease Orchestrator
 
       |
       +---- PMS API

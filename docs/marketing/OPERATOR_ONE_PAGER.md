@@ -1,4 +1,4 @@
-# StorageAI — for Independent Storage Operators
+# IntelliLease — for Independent Storage Operators
 
 *One page. Leave-behind after a founder demo. No AI hype — see `docs/demo/FOUNDER_DEMO_SCRIPT.md` for why.*
 
@@ -10,7 +10,7 @@ You never see that call as a loss — it just never shows up as anything. No mis
 
 ## The solution
 
-StorageAI answers immediately, figures out what the renter actually needs, and gives your team a clear next action — so an after-hours call becomes a lead you can follow up on instead of a call that just disappeared.
+IntelliLease answers immediately, figures out what the renter actually needs, and gives your team a clear next action — so an after-hours call becomes a lead you can follow up on instead of a call that just disappeared.
 
 It is not a chatbot bolted onto your website, and it doesn't try to replace you. It's a digital leasing employee: it listens, it understands, it hands you exactly what you need to close the rental yourself.
 

@@ -9,19 +9,19 @@ Audience: Claude Code / Senior Engineer / Future Developers
 
 # Mission
 
-StorageAI is an AI Virtual Leasing Manager built specifically for independent self-storage operators.
+IntelliLease is an AI Virtual Leasing Manager built specifically for independent self-storage operators.
 
 The product mission:
 
 > Never lose another storage rental opportunity because nobody answered the phone.
 
-StorageAI answers inbound calls, understands renter needs, captures leasing opportunities, and helps convert inquiries into tenants.
+IntelliLease answers inbound calls, understands renter needs, captures leasing opportunities, and helps convert inquiries into tenants.
 
 ---
 
 # Critical Product Positioning
 
-StorageAI IS NOT:
+IntelliLease IS NOT:
 
 - an AI chatbot
 - an AI assistant
@@ -30,7 +30,7 @@ StorageAI IS NOT:
 
 Those are implementation details.
 
-StorageAI IS:
+IntelliLease IS:
 
 > A digital leasing employee for self-storage facilities.
 
@@ -51,7 +51,7 @@ Always make product decisions through this lens.
 
 Small businesses will adopt AI when it replaces or enhances a specific business responsibility.
 
-StorageAI is the first example:
+IntelliLease is the first example:
 
 - AI Employee: Leasing Manager
 - Industry: Self-storage
@@ -94,7 +94,7 @@ DO NOT build Everest first.
 
 The first mountain camp is proving:
 
-"Can StorageAI recover missed rental opportunities?"
+"Can IntelliLease recover missed rental opportunities?"
 
 ---
 
@@ -116,7 +116,7 @@ Nobody answers.
 
 The renter calls another facility.
 
-StorageAI prevents that loss.
+IntelliLease prevents that loss.
 
 ---
 
@@ -228,7 +228,7 @@ Completed:
 
 CURRENT TARGET
 
-StorageAI moves from:
+IntelliLease moves from:
 
 Call Recording
 
@@ -249,7 +249,7 @@ Customer:
 How much does it cost?"
 ```
 
-StorageAI should produce:
+IntelliLease should produce:
 
 ```
 Rental Opportunity
@@ -422,7 +422,7 @@ Do not build them.
 
 # Definition Of Success
 
-StorageAI succeeds when a storage operator says:
+IntelliLease succeeds when a storage operator says:
 
 "I don't care how it works. It just saved me a rental."
 
@@ -430,7 +430,7 @@ StorageAI succeeds when a storage operator says:
 
 # Final Founder Note
 
-StorageAI is not being built to demonstrate AI.
+IntelliLease is not being built to demonstrate AI.
 
 It is being built to create a practical AI employee.
 

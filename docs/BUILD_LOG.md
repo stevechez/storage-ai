@@ -1309,3 +1309,27 @@ The footer's "Contact" link and both legal pages' contact sections use `mailto:s
 ### Outcome
 
 Phase 40A is complete: footer, privacy page, and terms page committed (`520a1cc`) and pushed to `main`, deployed to production, and verified live — both functionally (curl/link checks) and visually (real-browser screenshots at three breakpoints).
+
+## Rebrand — StorageAI → IntelliLease
+
+Date: 2026-07-25
+
+### What happened
+
+Steve is securing the domain `intellilease.app` and asked for the product name to switch from "StorageAI" to "IntelliLease" everywhere it appears. Grepped the repo first to scope it (`grep -rli storageai`) rather than guess at the size: ~30 files.
+
+Renamed in: all marketing-site copy and components (`hero.tsx`, `navbar.tsx`, `footer.tsx`, `pricing-section.tsx`, `roi-section.tsx`, `trust-section.tsx`, `integration-confidence.tsx`), dashboard-facing copy (`demo-banner.tsx`, `leasing-queue.tsx`, `operator-actions.tsx`), the Twilio voice greeting, `error.tsx`, `layout.tsx`'s page title, the new `/privacy` and `/terms` pages, and the currently-active docs (`README.md`, top-level `CLAUDE.md`, `docs/CLAUDE.md`, `CLAUDE_HANDOFF_EVEREST.md`, `docs/PROJECT_OVERVIEW.md`, and the architecture/customer-validation/demo/marketing/operations/telephony docs).
+
+**Deliberately left unchanged:**
+- **`docs/BUILD_LOG.md`'s existing entries** (everything above this one) — Steve's explicit call: this file is the project's append-only historical record, and past entries should stay accurate to what was true when they were written, not get retroactively rebranded. New entries from here forward use IntelliLease.
+- **`docs/sprints/SPRINT_09_RESPONSE_ASSISTANT.md`** — same reasoning, applied on judgment: a frozen point-in-time sprint-planning artifact from before the project moved from sprints to phases, not an actively-maintained doc.
+- **The live production URL** (`storage-ai-sigma.vercel.app`), referenced throughout the ops/telephony docs — this is the actual current Vercel deployment address, not the brand name; changing what these docs say wouldn't change where the app actually lives. Domain cutover (pointing `intellilease.app` at the deployment, updating Twilio/Vapi webhook URLs to match) is real infrastructure work for once the domain is actually secured, not a text-rename.
+- **`package.json`'s `"name": "storage-ai"`** and the repo/GitHub name — internal identifiers, not user-facing, and renaming them is a separate, higher-blast-radius decision (touches CI, Vercel project linkage) not implied by "switch the brand name."
+
+### Verification
+
+`tsc --noEmit` and `eslint .` both clean (run from `apps/web`). Full test suite green (46/46, unchanged — no logic touched, copy/text only). Loaded the local dev server in a real browser and visually confirmed the homepage renders "IntelliLease" in the nav, hero copy, and browser tab title.
+
+### Outcome
+
+Brand name updated everywhere it's currently user-facing or actively read, without disturbing historical record or touching infrastructure that depends on the domain actually being secured first. Not yet committed — awaiting Steve's review.

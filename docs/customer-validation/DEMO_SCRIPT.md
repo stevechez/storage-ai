@@ -16,13 +16,13 @@ Pause. Let them agree or push back — their answer here is the most valuable th
 
 ## 2. Solution, one sentence
 
-> "StorageAI answers that call, figures out what the renter needs, and turns it into something you can act on in the morning — without you having to listen to every recording."
+> "IntelliLease answers that call, figures out what the renter needs, and turns it into something you can act on in the morning — without you having to listen to every recording."
 
 ## 3. Workflow — walk the dashboard top to bottom
 
 **Point at the call, not the AI.** Open with the after-hours example already in the demo data:
 
-> "This one came in at 9pm — a customer wanted a 10x15 unit, needed it ASAP. Nobody was at the desk. Here's what StorageAI did with it."
+> "This one came in at 9pm — a customer wanted a 10x15 unit, needed it ASAP. Nobody was at the desk. Here's what IntelliLease did with it."
 
 Walk through, in order:
 

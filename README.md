@@ -1,4 +1,4 @@
-# StorageAI
+# IntelliLease
 
 A digital leasing manager for independent self-storage facilities — it captures rental opportunities from missed and after-hours calls, prioritizes them, and helps the operator convert them. It is **not** an AI chatbot, a generic AI agent, or a voice automation platform (see `CLAUDE.md` for the full product positioning) — today, calls are logged (manually, or via a simple ingestion API) and analyzed; nothing is answered or automated end-to-end.
 

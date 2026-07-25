@@ -8,7 +8,7 @@ Phase 40. A literal, runnable 10-minute script — every dashboard element and e
 
 Say this, close to verbatim:
 
-> "StorageAI is a digital leasing employee for self-storage facilities. It answers missed calls, figures out what the renter needs, and gives you a clear next action — so a call after you've locked up doesn't just disappear. I want to show you the whole thing, live, in the next ten minutes."
+> "IntelliLease is a digital leasing employee for self-storage facilities. It answers missed calls, figures out what the renter needs, and gives you a clear next action — so a call after you've locked up doesn't just disappear. I want to show you the whole thing, live, in the next ten minutes."
 
 Don't say "AI chatbot," "voice bot," or "automation platform" — that's not how this product is positioned, and it undersells it. It's a leasing employee that happens to work by phone.
 

@@ -19,7 +19,7 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "StorageAI",
+  title: "IntelliLease",
   description: "The digital leasing manager for independent self-storage facilities.",
 };
 

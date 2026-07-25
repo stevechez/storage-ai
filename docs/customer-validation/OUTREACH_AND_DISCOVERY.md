@@ -6,7 +6,7 @@ Goal: start conversations and learn. Not close deals. As of Sprint 22, this is s
 
 Sprint 17's email template below still works for getting the 15 minutes. But for the actual conversation, use this sharper framing (refined across Sprints 21 and 22) — it's a genuine improvement, not just an alternative:
 
-**Rule #1: you are not selling StorageAI. You are investigating storage operations.** If they ask what you're building, show them. If they don't ask, that's fine — the conversation was still a success.
+**Rule #1: you are not selling IntelliLease. You are investigating storage operations.** If they ask what you're building, show them. If they don't ask, that's fine — the conversation was still a success.
 
 **Opening** (said out loud, in person or on the phone — more authentic than reading a script):
 

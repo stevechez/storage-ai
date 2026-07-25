@@ -14,11 +14,11 @@ The plumbing works under real, unscripted use — not just verified calls from t
 
 ## Business
 
-The thing StorageAI exists to prevent — a missed call becoming a missed rental — measurably didn't happen at least once.
+The thing IntelliLease exists to prevent — a missed call becoming a missed rental — measurably didn't happen at least once.
 
 - At least one qualified renter opportunity (a real person who wanted a unit, not a wrong number or spam call) was captured that the operator confirms they would have otherwise missed
 - The operator actually completed at least one follow-up prompted by the dashboard (see `SUCCESS_METRICS.md`'s "Follow-ups completed" row)
-- Ideally, at least one unit rented that the operator attributes at least partly to a call StorageAI captured — this is the real bar, but it's the operator's word that counts here, not a formula. `estimateRevenueImpact()`'s numbers are an estimate at an assumed rate, explicitly not proof of real revenue (see the disclosure already on the dashboard's Revenue Impact card) — don't treat the dashboard's dollar figure as evidence on its own.
+- Ideally, at least one unit rented that the operator attributes at least partly to a call IntelliLease captured — this is the real bar, but it's the operator's word that counts here, not a formula. `estimateRevenueImpact()`'s numbers are an estimate at an assumed rate, explicitly not proof of real revenue (see the disclosure already on the dashboard's Revenue Impact card) — don't treat the dashboard's dollar figure as evidence on its own.
 
 **Bar:** the operator can point to one specific real interaction and say "that would have been missed."
 

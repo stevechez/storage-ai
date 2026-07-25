@@ -14,7 +14,7 @@ export function Hero() {
 					</h1>
 
 					<p className="mt-6 max-w-md text-lg text-steel">
-						StorageAI listens to every call your facility gets, figures out what the renter
+						IntelliLease listens to every call your facility gets, figures out what the renter
 						needs, and tells you exactly who to follow up with first — even the ones that came
 						in after you locked up for the night.
 					</p>

@@ -1,8 +1,8 @@
-# StorageAI
+# IntelliLease
 
 ## Mission
 
-StorageAI is an AI-powered virtual leasing manager for independent self-storage facilities.
+IntelliLease is an AI-powered virtual leasing manager for independent self-storage facilities.
 
 The goal:
 
@@ -19,7 +19,7 @@ Storage facilities lose revenue when:
 - staff cannot respond immediately
 - leasing questions require manual attention
 
-StorageAI provides:
+IntelliLease provides:
 
 - AI phone answering
 - rental qualification

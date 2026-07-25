@@ -34,7 +34,7 @@ Purchase via Console → Phone Numbers → Buy a Number. Requirements: Voice-cap
 
 - **Number:** `+18314329642`
 - **Purpose:** primary founder pilot number — every inbound call during founder testing hits this one number, not yet mapped to any specific facility (`telephony_events` has no `facility_id`; see "Why no facility_id" below)
-- **Note:** this number pre-existed on the Twilio account — it was previously configured (voice webhook pointed at a since-inactive project, `lunch-break-ai`) but confirmed unused before being repurposed for StorageAI in this phase. Not a number bought fresh for this project.
+- **Note:** this number pre-existed on the Twilio account — it was previously configured (voice webhook pointed at a since-inactive project, `lunch-break-ai`) but confirmed unused before being repurposed for IntelliLease in this phase. Not a number bought fresh for this project.
 
 ### Webhook configuration
 

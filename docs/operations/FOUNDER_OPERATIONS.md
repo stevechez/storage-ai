@@ -1,6 +1,6 @@
 # Founder Operations Playbook
 
-Phase 35. A practical routine for running StorageAI day to day — not a reference manual. Where a topic already has a dedicated doc, this points there instead of duplicating it, per the same "single source of truth" discipline `BUILD_LOG.md` already follows.
+Phase 35. A practical routine for running IntelliLease day to day — not a reference manual. Where a topic already has a dedicated doc, this points there instead of duplicating it, per the same "single source of truth" discipline `BUILD_LOG.md` already follows.
 
 ## Daily review
 

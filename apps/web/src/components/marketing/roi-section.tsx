@@ -18,7 +18,7 @@ export function RoiSection() {
 
 				<p className="mx-auto mt-8 max-w-xl text-lg text-steel">
 					Recovering even one additional rental easily justifies trying this. The question isn&apos;t
-					really what StorageAI costs — it&apos;s what a missed call already costs you, whether you
+					really what IntelliLease costs — it&apos;s what a missed call already costs you, whether you
 					notice it or not.
 				</p>
 			</div>

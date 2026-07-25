@@ -22,7 +22,7 @@ export function PricingSection() {
 				</h2>
 				<p className="mx-auto mt-4 max-w-2xl text-lg text-steel">
 					This isn&apos;t &quot;try the software for a month.&quot; It&apos;s a chance to find out,
-					with direct help from the person building it, whether StorageAI actually surfaces rental
+					with direct help from the person building it, whether IntelliLease actually surfaces rental
 					opportunities you&apos;d otherwise miss — before you commit to anything long-term.
 				</p>
 
@@ -88,7 +88,7 @@ export function PricingSection() {
 				</div>
 
 				<p className="mx-auto mt-10 max-w-xl text-sm text-steel">
-					One missed rental can represent thousands of dollars in lifetime revenue. StorageAI is
+					One missed rental can represent thousands of dollars in lifetime revenue. IntelliLease is
 					designed to help operators capture opportunities they never knew they lost.
 				</p>
 			</div>

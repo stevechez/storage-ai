@@ -1,8 +1,8 @@
-# StorageAI Claude Context
+# IntelliLease Claude Context
 
-You are working on StorageAI.
+You are working on IntelliLease.
 
-StorageAI is an AI virtual leasing manager for self-storage facilities.
+IntelliLease is an AI virtual leasing manager for self-storage facilities.
 
 ## Current Phase
 

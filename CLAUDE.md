@@ -1,6 +1,6 @@
-# StorageAI Claude Instructions
+# IntelliLease Claude Instructions
 
-You are working on StorageAI.
+You are working on IntelliLease.
 
 Before modifying code:
 
@@ -9,7 +9,7 @@ Read:
 - CLAUDE_HANDOFF_EVEREST.md
 - docs/CLAUDE.md
 
-StorageAI is an AI Virtual Leasing Manager for independent self-storage facilities.
+IntelliLease is an AI Virtual Leasing Manager for independent self-storage facilities.
 
 Product positioning:
 

@@ -2,7 +2,7 @@ import { Navbar } from '@/components/marketing/navbar';
 import { Footer } from '@/components/marketing/footer';
 
 export const metadata = {
-	title: 'Privacy Policy — StorageAI',
+	title: 'Privacy Policy — IntelliLease',
 };
 
 export default function PrivacyPage() {
@@ -12,9 +12,9 @@ export default function PrivacyPage() {
 			<main className="flex-1 bg-concrete px-6 py-16 sm:px-10 lg:px-16">
 				<div className="mx-auto max-w-2xl">
 					<p className="font-mono text-xs tracking-[0.2em] text-steel uppercase">Privacy Policy</p>
-					<h1 className="mt-4 font-display text-3xl font-black text-ink">How StorageAI handles your data</h1>
+					<h1 className="mt-4 font-display text-3xl font-black text-ink">How IntelliLease handles your data</h1>
 					<p className="mt-4 text-sm text-steel">
-						Last updated {new Date().getFullYear()}. StorageAI is an early-stage, founder-run product —
+						Last updated {new Date().getFullYear()}. IntelliLease is an early-stage, founder-run product —
 						this policy is intentionally simple, and will get more formal as the company grows. If
 						anything here is unclear, email the founder directly (see Contact below) rather than guess.
 					</p>
@@ -28,8 +28,8 @@ export default function PrivacyPage() {
 							</p>
 							<p className="mt-2">
 								If your facility is a pilot customer: basic facility and contact information you or the
-								founder provide, plus data from calls handled through StorageAI — the caller&apos;s phone
-								number, a transcript of the call, and StorageAI&apos;s automated read of what the call was
+								founder provide, plus data from calls handled through IntelliLease — the caller&apos;s phone
+								number, a transcript of the call, and IntelliLease&apos;s automated read of what the call was
 								about.
 							</p>
 						</section>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
 						<section>
 							<h2 className="font-display text-lg font-bold text-ink">Who has access</h2>
 							<p className="mt-2">
-								Right now, StorageAI is a single-founder operation. The founder has access to data
+								Right now, IntelliLease is a single-founder operation. The founder has access to data
 								needed to run and support the product. Data is not sold to third parties.
 							</p>
 						</section>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
 							<p className="mt-2">
 								Supabase (database hosting), Vercel (application hosting), and — for pilot facilities
 								using the phone/voice feature — Twilio and Vapi (call handling and transcription). Each
-								processes data only as needed to make StorageAI work.
+								processes data only as needed to make IntelliLease work.
 							</p>
 						</section>
 

@@ -2,7 +2,7 @@ import { Navbar } from '@/components/marketing/navbar';
 import { Footer } from '@/components/marketing/footer';
 
 export const metadata = {
-	title: 'Terms of Service — StorageAI',
+	title: 'Terms of Service — IntelliLease',
 };
 
 export default function TermsPage() {
@@ -12,9 +12,9 @@ export default function TermsPage() {
 			<main className="flex-1 bg-concrete px-6 py-16 sm:px-10 lg:px-16">
 				<div className="mx-auto max-w-2xl">
 					<p className="font-mono text-xs tracking-[0.2em] text-steel uppercase">Terms of Service</p>
-					<h1 className="mt-4 font-display text-3xl font-black text-ink">Terms for using StorageAI</h1>
+					<h1 className="mt-4 font-display text-3xl font-black text-ink">Terms for using IntelliLease</h1>
 					<p className="mt-4 text-sm text-steel">
-						Last updated {new Date().getFullYear()}. StorageAI is an early-stage, founder-supported
+						Last updated {new Date().getFullYear()}. IntelliLease is an early-stage, founder-supported
 						product. These terms are intentionally simple and will become more formal as the company
 						grows — if anything here is unclear, email the founder directly rather than guess.
 					</p>
@@ -32,7 +32,7 @@ export default function TermsPage() {
 						<section>
 							<h2 className="font-display text-lg font-bold text-ink">Acceptable use</h2>
 							<p className="mt-2">
-								Use StorageAI for its intended purpose — handling and understanding real leasing calls
+								Use IntelliLease for its intended purpose — handling and understanding real leasing calls
 								for your facility. Don&apos;t use it to send unsolicited communications, attempt to
 								disrupt the service, or access data that isn&apos;t yours.
 							</p>
@@ -50,9 +50,9 @@ export default function TermsPage() {
 						<section>
 							<h2 className="font-display text-lg font-bold text-ink">Limitation of liability</h2>
 							<p className="mt-2">
-								StorageAI&apos;s recommendations and analysis are estimates, not guarantees — the
+								IntelliLease&apos;s recommendations and analysis are estimates, not guarantees — the
 								operator always makes the final call on pricing, availability, and any commitment to a
-								renter. To the extent permitted by law, StorageAI isn&apos;t liable for business
+								renter. To the extent permitted by law, IntelliLease isn&apos;t liable for business
 								decisions made based on its output.
 							</p>
 						</section>

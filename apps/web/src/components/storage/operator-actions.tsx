@@ -7,7 +7,7 @@ export function OperatorActions({ actions }: { actions: OperatorAction[] }) {
 	if (actions.length === 0) {
 		return (
 			<Card className="text-gray-500">
-				Nothing needs attention right now — StorageAI is watching every call as it comes in.
+				Nothing needs attention right now — IntelliLease is watching every call as it comes in.
 			</Card>
 		);
 	}

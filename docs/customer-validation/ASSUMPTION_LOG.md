@@ -10,7 +10,7 @@ Every sprint from 1 through 17 was built on assumptions, not evidence — that's
 | Operators will trust and use a suggested response draft rather than writing their own from scratch | Sprint 9, Customer Response Assistant | | |
 | A single flat assumed monthly unit rate is a credible enough stand-in for real revenue impact, without PMS pricing data | Sprint 15, Revenue Impact | | |
 | Independent / family-owned operators (not enterprise REITs) are the right initial customer, not just an easier one to reach | Sprint 17, Ideal Customer Profile | | |
-| Operators don't need PMS integration to get real value from StorageAI in its current form | Standing "no PMS integration" boundary repeated in every sprint's Out of Scope | | |
+| Operators don't need PMS integration to get real value from IntelliLease in its current form | Standing "no PMS integration" boundary repeated in every sprint's Out of Scope | | |
 | The follow-up lifecycle (new → contacted → converted → lost) matches how an operator actually thinks about a lead, rather than a model imposed on them | Sprint 8, Follow-Up Engine | | |
 
 ## How to use this

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import twilio from 'twilio';
 import { logTelephonyEvent, parseTwilioVoiceParams } from '@/lib/telephony/events';
 
-const GREETING = 'Thank you for calling StorageAI. This system is currently under founder testing.';
+const GREETING = 'Thank you for calling IntelliLease. This system is currently under founder testing.';
 
 function buildGreetingTwiml(): string {
 	const response = new twilio.twiml.VoiceResponse();

@@ -1,4 +1,4 @@
-# StorageAI Development Guidelines
+# IntelliLease Development Guidelines
 
 ## General Rules
 
