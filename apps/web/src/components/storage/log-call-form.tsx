@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { logCallAction, type LogCallFormState } from '@/app/dashboard/actions';
+import { Card } from './card';
 
 const initialState: LogCallFormState = { status: 'idle' };
 
@@ -9,7 +10,7 @@ export function LogCallForm({ facilityId }: { facilityId: string }) {
 	const [state, formAction, isPending] = useActionState(logCallAction, initialState);
 
 	return (
-		<div className="border rounded-lg p-5">
+		<Card>
 			<div className="text-sm text-gray-500 mb-1">Log a Call</div>
 			<p className="text-sm text-gray-500 mb-4">
 				No phone system connected yet — until there is, log a call here and it runs through the same
@@ -57,6 +58,6 @@ export function LogCallForm({ facilityId }: { facilityId: string }) {
 					{isPending ? 'Logging…' : 'Log call'}
 				</button>
 			</form>
-		</div>
+		</Card>
 	);
 }

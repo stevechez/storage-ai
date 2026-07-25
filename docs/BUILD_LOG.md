@@ -742,3 +742,43 @@ Not a feature phase. Review whether operators can understand *why* StorageAI's o
 ### Outcome
 
 The dashboard no longer shows two different "recommended" instructions for the same call under an identical label, and every AI-derived field on the opportunity card now says why it says what it says — without touching any analysis logic or adding a new capability.
+
+## Phase 33 — Maintainability & Operational Excellence
+
+Date: 2026-07-24
+
+### Goal
+
+Engineering discipline phase, not a feature phase. Reviewed component architecture, Server Actions, shared utilities, TypeScript health, and repo cleanliness — customer-visible behavior unchanged throughout.
+
+### Completed — Task 1: component architecture
+
+Found the same card wrapper (`border rounded-lg p-5`) hand-copied 11 times across 9 files (`OpportunityCard`, `RevenueImpactCard`, `OperatorSummary`, `OutcomeSummary`, `OpportunitySummary` ×3, `LogCallForm`, `ResponseDraftCard`, and the empty states in `LeasingQueue`/`OperatorActions`). Extracted a shared `Card` component (`components/storage/card.tsx`, takes children + optional `className`) and switched all 9 files to use it. No other duplicate components found; no component was large enough to warrant splitting.
+
+### Completed — Task 2: Server Action review
+
+Audited all three Server Actions (`logCallAction`, `updateFollowUpStatusAction`, `submitEarlyAccessSignup`). Validation and return-value shape were already consistent. Found one real inconsistency: `submitEarlyAccessSignup` was the only one of the three that didn't `console.error` on a database failure — a failed early-access signup (a lead-generation-critical path pre-revenue) would fail silently with zero server-side trace. Fixed to match the logging pattern already used by the other two actions.
+
+### Completed — Task 3: shared utility audit
+
+Reviewed everything under `lib/storage/` and `lib/supabase/`. No duplicated business logic found — each file already has a single, clear responsibility (analysis, revenue, responses, report, outcomes, actions, follow-up, calls, facility, format). No consolidation performed; the existing structure is already what Task 3 was asking for.
+
+### Completed — Task 4: TypeScript health
+
+Found the most significant type-safety gap in the app: `createAdminClient()` has no generated `Database` type, so `getCurrentFacility()` returned an implicitly-`any` row — `facility.name`, `facility.id`, etc. had zero compile-time checking anywhere they were used. Fixed by writing an accurate `Facility` interface (matching the real `facilities` schema, including the Phase 28 contact columns) into `types/storage.ts` — replacing its previous contents (`Lead`/`Facility`), which were stale, unused, and pre-dated the current `calls`-based model — and typing `getCurrentFacility()`'s return as `Promise<Facility>`. Verified this isn't cosmetic: temporarily introduced a typo (`facility.nam`) in `dashboard/page.tsx` and confirmed `tsc` now catches it (`Property 'nam' does not exist on type 'Facility'`), then reverted. The broader issue — no generated types at all, so every other raw Supabase query is still implicitly `any` at the source — is real but touches every data-access file; logged in `TECH_DEBT_REGISTER.md` rather than fixed wholesale in a low-risk-only phase.
+
+### Completed — Task 5: repository health
+
+Deleted two confirmed-dead files, both zero imports and zero doc references, both artifacts of the pre-`calls`-model direction:
+- `types/storage.ts`'s old `Lead`/`LeadStatus` types (superseded by the rewrite above)
+- `lib/pms/mock.ts` (`getAvailableUnits`) and the now-empty `lib/pms/` directory — an unwired PMS integration stub; CLAUDE.md explicitly defers PMS work until its own sprint, so this was already premature
+
+Left `/leads`, `/facilities` (unlinked placeholder pages) and the anon-key Supabase clients alone — both already tracked in `TECH_DEBT_REGISTER.md` from earlier phases with an explicit "keep for now" rationale; Task 5 asked to delete only confirmed-unused items, and reversing a prior deliberate decision isn't that.
+
+### Verification
+
+`tsc --noEmit`, `eslint`, and the full Vitest suite (33/33) all pass. Confirmed live: dashboard, homepage, `/leads`, `/facilities` all still return `200`; dashboard HTML still renders the card markup identically after the `Card` extraction.
+
+### Outcome
+
+Nine duplicated card wrappers became one component, a silent-failure gap in the signup form was closed, the facility object gained real compile-time type safety (proven, not assumed), and two dead files were removed — all with zero change to what a customer or operator sees.

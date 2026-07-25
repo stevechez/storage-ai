@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { ResponseDraft } from '@/types/leasing';
+import { Card } from './card';
 
 export function ResponseDraftCard({ draft }: { draft: ResponseDraft }) {
 	const [copied, setCopied] = useState(false);
@@ -13,7 +14,7 @@ export function ResponseDraftCard({ draft }: { draft: ResponseDraft }) {
 	}
 
 	return (
-		<div className="border rounded-lg p-5">
+		<Card>
 			<div className="text-sm text-gray-500 mb-2">Suggested Response</div>
 
 			<p className="whitespace-pre-line text-sm">{draft.message}</p>
@@ -24,6 +25,6 @@ export function ResponseDraftCard({ draft }: { draft: ResponseDraft }) {
 			>
 				{copied ? 'Copied!' : 'Copy Response'}
 			</button>
-		</div>
+		</Card>
 	);
 }

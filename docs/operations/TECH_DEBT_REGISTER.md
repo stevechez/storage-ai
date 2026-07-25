@@ -32,6 +32,14 @@ Captured, not fixed. Every item below was verified directly (code review + local
 **Estimated effort:** Small — either remove `'low'` from the type and its maps, or give `detectPriority()` a real third tier if one is ever wanted. Changing detection logic is out of scope for a copy/clarity phase, so left alone
 **Priority:** Low
 
+## Type Safety
+
+### Supabase clients have no generated `Database` type, so every query returns implicitly-`any` rows
+**Risk:** Low today — no incidents caused by this yet
+**User impact:** None directly. `createAdminClient()` (`lib/supabase/admin.ts`) calls `createClient()` with no generic type parameter, so every `.from(...).select(...)` result is `any` at the source. Phase 33 fixed the one call site this bit hardest (`getCurrentFacility()`, now explicitly typed `Promise<Facility>` against `types/storage.ts`, verified to actually catch typos via `tsc`), but `report.ts`'s raw `calls` rows and other direct queries are still untyped at the source — they just happen to be narrow enough in how they're used that nothing has broken yet
+**Estimated effort:** Medium — run Supabase's type generator against the schema and pass the generated `Database` type into every `createClient()` call; touches every data-access file in `lib/storage/` and `lib/supabase/`, so out of scope for a low-risk-only phase
+**Priority:** Low (raise if a real facility hits a bug traceable to a row-shape mismatch)
+
 ## Dead Code / Schema
 
 ### `leads`, `units`, `conversations` tables are fully unreferenced

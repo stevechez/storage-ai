@@ -30,6 +30,7 @@ export async function submitEarlyAccessSignup(
 	});
 
 	if (error) {
+		console.error('Failed to save early access signup', error);
 		return { status: 'error', message: 'Something went wrong. Please try again.' };
 	}
 

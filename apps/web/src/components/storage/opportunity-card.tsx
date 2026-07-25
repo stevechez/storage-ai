@@ -1,5 +1,6 @@
 import type { LeasingOpportunity, OpportunityIntent, OpportunityPriority } from '@/types/leasing';
 import { describePriorityReason } from '@/lib/storage/intelligence';
+import { Card } from './card';
 
 const INTENT_LABEL: Record<OpportunityIntent, string> = {
 	rental: 'Wants to rent a unit',
@@ -28,7 +29,7 @@ export function OpportunityCard({
 	actionLabel?: string;
 }) {
 	return (
-		<div className="border rounded-lg p-5">
+		<Card>
 			<div className="text-sm text-gray-500">Rental Opportunity</div>
 
 			<div className="mt-3 space-y-2">
@@ -64,6 +65,6 @@ export function OpportunityCard({
 			<div className="mt-4 text-xs text-gray-400">
 				Based on an automatic read of the call — always confirm details with the customer.
 			</div>
-		</div>
+		</Card>
 	);
 }

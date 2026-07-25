@@ -4,14 +4,15 @@ import { OpportunityStatusBadge } from './opportunity-status-badge';
 import { ResponseDraftCard } from './response-draft-card';
 import { FollowUpStatusForm } from './follow-up-status-form';
 import { ClickablePhone } from './clickable-phone';
+import { Card } from './card';
 import { generateResponseDraft } from '@/lib/storage/responses';
 
 export function LeasingQueue({ followUps }: { followUps: FollowUp[] }) {
 	if (followUps.length === 0) {
 		return (
-			<div className="border rounded-lg p-5 text-gray-500">
+			<Card className="text-gray-500">
 				No leasing opportunities yet. As soon as a customer calls, StorageAI will capture it here.
-			</div>
+			</Card>
 		);
 	}
 

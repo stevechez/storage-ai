@@ -1,9 +1,10 @@
 import type { RevenueImpact } from '@/types/leasing';
 import { formatEstimatedRevenue } from '@/lib/storage/revenue';
+import { Card } from './card';
 
 export function RevenueImpactCard({ impact }: { impact: RevenueImpact }) {
 	return (
-		<div className="border rounded-lg p-5">
+		<Card>
 			<div className="text-sm text-gray-500 mb-2">Revenue Impact</div>
 
 			<div className="text-3xl font-bold">{formatEstimatedRevenue(impact.estimatedMonthlyRevenue)}</div>
@@ -21,6 +22,6 @@ export function RevenueImpactCard({ impact }: { impact: RevenueImpact }) {
 			<div className="text-xs text-gray-400">
 				Estimated using an assumed ${impact.assumedMonthlyRate}/month average unit rate — not real billing data.
 			</div>
-		</div>
+		</Card>
 	);
 }

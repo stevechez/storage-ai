@@ -1,4 +1,5 @@
 import type { OutcomeSummary as OutcomeSummaryData } from '@/types/leasing';
+import { Card } from './card';
 
 export function OutcomeSummary({
 	summary,
@@ -10,7 +11,7 @@ export function OutcomeSummary({
 	const identified = summary.pending + summary.converted + summary.lost;
 
 	return (
-		<div className="border rounded-lg p-5">
+		<Card>
 			<div className="text-sm text-gray-500 mb-2">{title}</div>
 
 			<p className="text-sm">
@@ -19,6 +20,6 @@ export function OutcomeSummary({
 				<span className="font-semibold">{summary.lost}</span> lost ·{' '}
 				<span className="font-semibold">{summary.pending}</span> pending
 			</p>
-		</div>
+		</Card>
 	);
 }

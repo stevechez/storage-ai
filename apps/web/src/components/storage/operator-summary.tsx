@@ -1,3 +1,5 @@
+import { Card } from './card';
+
 export function OperatorSummary({
 	highPriorityCount,
 	needsFollowUpCount,
@@ -8,7 +10,7 @@ export function OperatorSummary({
 	convertedRecentCount: number;
 }) {
 	return (
-		<div className="border rounded-lg p-5">
+		<Card>
 			<div className="text-sm text-gray-500 mb-2">Today&apos;s Leasing Activity</div>
 
 			<div className="space-y-1 text-sm">
@@ -27,6 +29,6 @@ export function OperatorSummary({
 					{convertedRecentCount === 1 ? '' : 's'} Converted Recently
 				</div>
 			</div>
-		</div>
+		</Card>
 	);
 }
