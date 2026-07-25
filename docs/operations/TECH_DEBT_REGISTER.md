@@ -10,11 +10,8 @@ Captured, not fixed. Every item below was verified directly (code review + local
 **Estimated effort:** Small — one file
 **Priority:** Medium
 
-### No index on `calls.facility_id`
-**Risk:** Low today, grows with real usage
-**User impact:** None visible yet — invisible at demo/pilot scale (a handful of rows). Every dashboard load currently full-scans `calls` filtered by facility; becomes a real latency issue once a facility has meaningful call volume
-**Estimated effort:** Small — one-line migration
-**Priority:** Medium (raise to High once any facility has real call volume)
+### ~~No index on `calls.facility_id`~~ — Fixed Phase 34
+Added `calls_facility_id_created_at_idx (facility_id, created_at desc)` (`supabase/migrations/20260724180000_add_calls_facility_id_index.sql`). Verified with `EXPLAIN ANALYZE`: no measurable effect at today's 11-row scale (Postgres correctly prefers a sequential scan on a table this small), but a 50,000-row synthetic test (inserted and cleaned up for the test, not left in the database) showed 158ms → 65ms, and the unindexed plan spilled to disk for the sort. See `PERFORMANCE_BASELINE.md`.
 
 ## Data Quality
 

@@ -1,6 +1,6 @@
 import { getCurrentFacility } from '@/lib/storage/facility';
 import { DEMO_FACILITY_ID } from '@/lib/storage/constants';
-import { getMorningReport } from '@/lib/storage/report';
+import { summarizeOpportunities } from '@/lib/storage/report';
 import { getFollowUps } from '@/lib/storage/follow-up';
 import { getTodaysActions } from '@/lib/storage/actions';
 import { summarizeRecentOutcomes } from '@/lib/storage/outcomes';
@@ -22,15 +22,16 @@ export default async function DashboardPage({
 	searchParams: Promise<{ facility?: string }>;
 }) {
 	const { facility: facilityId } = await searchParams;
-	const facility = await getCurrentFacility(facilityId);
+	const resolvedFacilityId = facilityId ?? DEMO_FACILITY_ID;
 
-	const [report, followUps] = await Promise.all([
-		getMorningReport(facility.id),
-		getFollowUps(facility.id),
+	const [facility, followUps] = await Promise.all([
+		getCurrentFacility(resolvedFacilityId),
+		getFollowUps(resolvedFacilityId),
 	]);
 
 	const todaysActions = getTodaysActions(followUps);
 	const recentOutcomes = summarizeRecentOutcomes(followUps);
+	const report = summarizeOpportunities(todaysActions.map(action => action.opportunity));
 
 	const activitySummary =
 		todaysActions.length === 0

@@ -782,3 +782,41 @@ Left `/leads`, `/facilities` (unlinked placeholder pages) and the anon-key Supab
 ### Outcome
 
 Nine duplicated card wrappers became one component, a silent-failure gap in the signup form was closed, the facility object gained real compile-time type safety (proven, not assumed), and two dead files were removed — all with zero change to what a customer or operator sees.
+
+## Phase 34 — Performance & Scalability Baseline
+
+Date: 2026-07-24
+
+### Goal
+
+Measure before optimizing. Establish whether today's architecture comfortably supports the first 20 founder facilities, and document a baseline for future comparison — not a general optimization pass.
+
+### Completed — Task 1: performance baseline
+
+Measured directly rather than assumed, against a local production build (`next build` + `next start`) and the live Vercel deployment: page loads, `analyzeTranscript()` timing (confirmed ~0.5 microseconds/call — it's regex, not a model call, exactly as documented), manual call logging round trip, and database query timing via `EXPLAIN ANALYZE`. Full numbers and methodology in the new `docs/operations/PERFORMANCE_BASELINE.md`.
+
+### Completed — Task 2: database query review
+
+Found a real duplicate query: `getMorningReport()` and `getFollowUps()` issued byte-for-byte identical queries against `calls` for the same facility on every dashboard load. Worse, most of `getMorningReport()`'s output was dead — of 5 computed fields, only 3 (`rentalRequests`/`pricingQuestions`/`availabilityRequests`) were ever read by the UI; `highPriorityCount` was silently recomputed elsewhere from already-fetched data instead, and `mediumPriorityCount`/`recommendedFollowUp`/`totalCalls`/`recentCalls` were read nowhere at all. Fixed: removed `getMorningReport()` entirely; `dashboard/page.tsx` now fetches `calls` once via `getFollowUps()` and derives the report synchronously from that data using the existing pure, tested `summarizeOpportunities()`. Also parallelized the facility lookup with the (now single) calls query, since neither depends on the other — restoring the parallel-fetch intent the original code already had. Measured effect: ~81ms → ~34ms average warm local dashboard load (~2.4x).
+
+Also fixed the missing index on `calls.facility_id` already flagged in `TECH_DEBT_REGISTER.md` since Phase 24B: added `calls_facility_id_created_at_idx` matching the exact filter+sort every call site uses. Verified with `EXPLAIN ANALYZE` at both today's real scale (11 rows — no measurable difference, confirmed not assumed) and a 50,000-row synthetic test inserted and cleaned up for the purpose (158ms → 65ms, avoids a disk-spilling sort). No N+1 patterns or other unnecessary queries found elsewhere.
+
+### Completed — Task 3: client performance review
+
+Only 6 `'use client'` components exist in the entire app: 2 are required Next.js error boundaries, 3 need `useActionState` for form submission, 1 needs local `useState` for a copy-to-clipboard button. No Context usage anywhere, no oversized client trees, no unnecessary state. Nothing to fix — this was already clean.
+
+### Completed — Task 4: bundle & dependency review
+
+5 production dependencies total (`@supabase/ssr`, `@supabase/supabase-js`, `next`, `react`, `react-dom`) — already minimal for this stack, no heavy UI/date/icon libraries to trim. Landing page ships ~184KB gzip of JS, which is normal framework-runtime weight for Next.js 16 + React 19, not application bloat. `@supabase/ssr` is only used by the anon-key clients already tracked (and deliberately kept) in the Tech Debt Register — not touched, consistent with that prior decision.
+
+### Completed — Task 5: performance documentation
+
+`docs/operations/PERFORMANCE_BASELINE.md` — measurement date, environment (local production build vs. live Vercel, explicitly distinguished), every metric collected, observations, the two bottlenecks found and fixed this phase, and three deferred items with the evidence-based reasoning for not touching them yet.
+
+### Verification
+
+`tsc --noEmit`, `eslint`, and the full Vitest suite (33/33) all pass. Confirmed live on both the local production build (dashboard content and Phase 31/32 features — `tel:` links, "Suggested Next Step" — unchanged) and via the query-count reduction itself, measured directly rather than assumed.
+
+### Outcome
+
+The app was already fast — every warm local measurement came in under 100ms, and the one place real time goes (network + hosted DB round trips on the live deployment) isn't something this phase's Non-Goals allow addressing anyway. The one genuine inefficiency found, a duplicated database query with mostly-dead output, is gone, the already-known missing index is now in place and its impact is measured rather than assumed, and everything not worth touching yet is documented instead of built speculatively.

@@ -1,5 +1,3 @@
-import { createAdminClient } from '@/lib/supabase/admin';
-import { analyzeTranscript } from './intelligence';
 import type { LeasingOpportunity, MorningReport } from '@/types/leasing';
 
 const PRIORITY_RANK = { high: 0, medium: 1, low: 2 } as const;
@@ -32,28 +30,5 @@ export function summarizeOpportunities(opportunities: LeasingOpportunity[]): Mor
 		pricingQuestions,
 		availabilityRequests,
 		recommendedFollowUp,
-	};
-}
-
-export async function getMorningReport(facilityId: string) {
-	const supabase = createAdminClient();
-
-	const { data: calls, error } = await supabase
-		.from('calls')
-		.select('*')
-		.eq('facility_id', facilityId)
-		.order('created_at', { ascending: false });
-
-	if (error) {
-		throw error;
-	}
-
-	const unresolvedCalls = calls.filter(call => call.status === 'new' || call.status === 'contacted');
-	const opportunities = unresolvedCalls.map(call => analyzeTranscript(call.transcript ?? ''));
-
-	return {
-		...summarizeOpportunities(opportunities),
-		totalCalls: calls.length,
-		recentCalls: calls,
 	};
 }
