@@ -1278,3 +1278,34 @@ One real gap surfaced and logged rather than glossed over: the Twilio number and
 ### Outcome
 
 Yes, dev-complete for the outreach phase — verified, not assumed. The next real engineering task is already named and waiting for the evidence (an actual "yes") that would justify building it, consistent with every prior phase's discipline about not building ahead of real signal.
+
+## Phase 40A — Website Trust & Footer Polish
+
+Date: 2026-07-25
+
+### Goal
+
+Polish-only pass on the marketing site's footer and add missing legal pages, to increase visitor trust and credibility. Explicit non-goals: no homepage redesign, no messaging changes, no pricing changes, no new product features, no dashboard changes, no nav redesign, no analytics.
+
+### Audit (Task 1)
+
+Confirmed before writing anything: no `privacy`, `terms`, or `legal` page existed anywhere in the repo; no email address was referenced anywhere in code or docs (`grep -rl` for the founder's email returned zero matches); the only real routes are `/`, `/dashboard`, and `/api/*` (no About/FAQ/Features pages exist to link to); the only real anchors on the landing page are `#how-it-works`, `#pricing`, `#early-access`, `#early-stage`, `#how-it-fits`.
+
+### What changed
+
+- **`components/marketing/footer.tsx`** — expanded from a single-row footer into a 4-column layout (brand/tagline, Product, Company, Legal), built entirely from real, existing destinations — no invented pages. "Legal" replaces the generic "Resources" pattern since the only real items belonging there are the two new legal pages. Original tagline and copyright line kept verbatim per the "don't change messaging" constraint.
+- **`app/privacy/page.tsx`** and **`app/terms/page.tsx`** (new) — simple, honest MVP legal pages, explicitly framed as early-stage and evolving rather than pretending to be formal legal documents. Privacy page names the real third-party processors in use (Supabase, Vercel, Twilio, Vapi). Terms page describes the actual founder-pilot arrangement (month-to-month, no contract, cancel by contacting the founder directly) and deliberately omits a governing-law/jurisdiction clause since the business's actual legal entity/jurisdiction isn't established yet and shouldn't be invented. Both reuse the existing `Navbar`/`Footer` components for visual consistency with the rest of the site.
+
+### Judgment call flagged for review
+
+The footer's "Contact" link and both legal pages' contact sections use `mailto:stevechez@gmail.com`. This address was not previously used anywhere in the codebase or docs — it's only known from this session's environment context. Used it rather than blocking the phase on a clarifying question, since it's a low-consequence, one-line, easily-changed detail — but it has not been independently confirmed as the address Steve wants public-facing, and should be reviewed before this ships.
+
+### Verification
+
+`tsc --noEmit` and `eslint .` both clean. Full test suite green (unchanged — no test-covered logic was touched, this was markup/content only). Confirmed via `curl` against the local dev server that `/`, `/privacy`, and `/terms` all return `200`, and that every expected footer link renders in the HTML.
+
+**Not verified:** true responsive/visual behavior on desktop, tablet, and mobile (Task 7), and the requested screenshots. The `claude-in-chrome` browser extension was disconnected for this entire phase, so this was checked structurally instead (the grid is `grid-cols-2` under `sm:`, `sm:grid-cols-4` at and above it, with the brand block spanning both mobile columns) but not visually confirmed in a real browser at real breakpoints. Flagged as outstanding rather than silently skipped.
+
+### Outcome
+
+Footer, privacy page, and terms page are built and passing all automated checks, but **not yet committed** — awaiting Steve's review of the contact email choice and his explicit go-ahead, per this project's standing workflow of nothing shipping without an explicit "commit this."
