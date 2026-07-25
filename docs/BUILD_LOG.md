@@ -1264,3 +1264,17 @@ Steve's first real-world test of the early access form (submitted via the live p
 ### Outcome
 
 Not a product bug — the system worked correctly the entire time. The value here was in the process: every real hypothesis (RLS, masked errors, a broken deploy) was checked against real evidence and ruled out one at a time, rather than guessed at, which is exactly what surfaced the real, simple cause instead of stopping at a plausible-sounding wrong one. Logged as a standing first-check in `docs/operations/FOUNDER_OPERATIONS.md`'s "Responding to bugs" section (now step 0: confirm the URL before reproducing anything) so this specific trap doesn't cost as much time the next time it happens — and given how the *original* local/production mix-up happened once already in this project, it likely will.
+
+## Dev-readiness check before founder outreach
+
+Date: 2026-07-25
+
+### What happened
+
+Asked directly: is the project dev-complete now that only real operator outreach (Phase 40 Task 5) remains? Answered with a fresh check, not a recollection of past verification — full test suite (43/43), `tsc`, `eslint`, and live production (landing, dashboard, both webhooks including their signature/secret checks) all confirmed healthy right now, and `TECH_DEBT_REGISTER.md` reconfirmed to have nothing marked "must resolve before first founder customer."
+
+One real gap surfaced and logged rather than glossed over: the Twilio number and Vapi assistant are single-tenant, hardcoded to `PILOT_FACILITY_ID` — there's no number-to-facility routing for a second real facility yet. Not a blocker: the existing manual "Log a Call" flow already gives a first real pilot facility a complete, working experience with zero telephony required, matching how onboarding was always designed. It becomes real, near-term work the moment a real operator specifically wants their *own* phone number answered automatically — logged in `TECH_DEBT_REGISTER.md` as a "Can wait until after first customer" item rather than built speculatively now.
+
+### Outcome
+
+Yes, dev-complete for the outreach phase — verified, not assumed. The next real engineering task is already named and waiting for the evidence (an actual "yes") that would justify building it, consistent with every prior phase's discipline about not building ahead of real signal.

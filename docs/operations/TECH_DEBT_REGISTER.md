@@ -12,6 +12,7 @@ Every remaining open item below, re-ranked by actual product readiness rather th
 - `'converted'`/`'lost'` are not enforced as terminal statuses
 - Supabase clients have no generated `Database` type
 - Vapi webhook retry can drop a call if `logCall()` fails after the transcript insert already succeeded (new, see below) — no evidence it has happened
+- **Telephony (Twilio number + Vapi assistant) is single-tenant** — every real call, from anyone, is hardcoded to `PILOT_FACILITY_ID` (`lib/vapi/transcripts.ts`, `lib/telephony/events.ts`). Not a blocker for onboarding a first real pilot facility: the existing manual "Log a Call" flow (`ONBOARDING_RUNBOOK.md`) already gives them a complete, working, per-facility pilot with zero telephony needed. It becomes real work the moment a real facility wants their *own* phone number answered automatically — no number-to-facility routing exists yet, and building it before there's a real facility to design it against would be exactly the kind of premature build this project has consistently avoided (Phase 40, found while confirming dev-readiness for founder outreach, 2026-07-25)
 
 **Future scalability** (not urgent now; relevant once the product or team outgrows today's scale):
 - No server-side check that a submitted `facilityId` matches an authenticated identity
