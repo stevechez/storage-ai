@@ -31,6 +31,7 @@ Open a new entry in `docs/operations/PILOT_LOG.md` the same day, even if there's
 
 ## Responding to bugs
 
+0. **Confirm which URL you're actually testing against before assuming something's broken.** This happened for real (2026-07-25): a real early-access signup showed the correct success message but never appeared in production's `early_access_signups` table — looked exactly like a broken insert or a masked error. It was neither. The submission had gone to `localhost:3000` (a local dev server, quietly still running), not `https://storage-ai-sigma.vercel.app` — so it landed correctly in the local Docker database, not production. The system was never broken; the browser tab was just pointed at the wrong place. This is the exact inverse of the project's original, better-known incident (local dev silently writing to *production*) — so don't assume that fix means this class of mix-up can't happen again in the other direction. Check the address bar first, before reproducing anything.
 1. **Reproduce it first**, using the actual facility/call ID if it came from a real pilot interaction — don't fix from a description alone.
 2. Check `docs/operations/ONBOARDING_RUNBOOK.md` §5 (Recovery procedures) and `docs/operations/BACKUP_RECOVERY.md` — is this a known, already-documented failure mode?
 3. If it's new: fix it with the same discipline every phase in `BUILD_LOG.md` has used — a real test or a live-verified fix, not an assumed one.

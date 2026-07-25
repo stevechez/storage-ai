@@ -1245,3 +1245,22 @@ Every phone number and address in `FIRST_10_OPERATORS.md` came from the facility
 ### Outcome
 
 Phase 40 is complete. Nothing here changed the product — that was the explicit point, with a long parking-lot list of tempting-but-premature features (PMS integration, SMS, payments, multi-location, more AI) named and deliberately not touched. What exists now: a tagged, evidenced voice milestone; a demo that can actually be run in 10 minutes because every line in it is real; a one-pager that doesn't oversell; a definition of what pilot success actually means beyond a vague feeling; and ten real, named, verified independent operators to start real conversations with. The product was already provably ready for a real conversation — this phase made sure the conversation itself is ready too.
+
+## Phase 40 follow-up — early access signup investigation (not a bug)
+
+Date: 2026-07-25
+
+### What happened
+
+Steve's first real-world test of the early access form (submitted via the live production site, or so it appeared) showed the correct success message, but the row never appeared in production's `early_access_signups` table. Investigated with the same discipline as every other incident this session — checked, not assumed:
+
+- Ruled out RLS/permissions: a raw insert straight against production succeeded cleanly.
+- Ruled out the code silently masking errors: read the actual deployed `submitEarlyAccessSignup` — it only treats a duplicate-email error as success, nothing else.
+- Reproduced the exact user flow with `claude-in-chrome` browser automation against the real production URL: real browser, real form, real submit — produced a real row, confirmed by direct query, then cleaned up.
+- That left a genuine contradiction: the pipeline provably worked, but Steve's own resubmission (twice) still left production's table empty.
+
+**Root cause, found by checking Steve's browser Network tab directly:** the submissions were going to `localhost:3000`, not `https://storage-ai-sigma.vercel.app` — visible from the request's `Initiator: actions.ts:10` targeting `localhost`, plus Turbopack/webpack-HMR artifacts only present in `next dev`. Confirmed by finding both real submissions sitting safely in the local Docker database. This is the exact inverse of this project's original, well-documented incident (local dev silently writing to *production*) — this time, local dev correctly did what it's supposed to, it just wasn't what was being tested.
+
+### Outcome
+
+Not a product bug — the system worked correctly the entire time. The value here was in the process: every real hypothesis (RLS, masked errors, a broken deploy) was checked against real evidence and ruled out one at a time, rather than guessed at, which is exactly what surfaced the real, simple cause instead of stopping at a plausible-sounding wrong one. Logged as a standing first-check in `docs/operations/FOUNDER_OPERATIONS.md`'s "Responding to bugs" section (now step 0: confirm the URL before reproducing anything) so this specific trap doesn't cost as much time the next time it happens — and given how the *original* local/production mix-up happened once already in this project, it likely will.
