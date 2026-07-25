@@ -986,3 +986,21 @@ Twilio's phone number "Purpose/Region" fields in `TWILIO_SETUP.md` are left as f
 ### Outcome
 
 The plumbing is proven locally, including one real bug (a missing grant) that would have silently swallowed every real call's log entry in production had it shipped unverified. What's left before a real phone can ring into this system: Steve configuring Vercel's environment variables and Twilio's webhook URL, both documented step-by-step in `TWILIO_SETUP.md`. No AI, recording, or routing was added — exactly as scoped.
+
+## Phase 38 follow-up — production webhook configuration
+
+Date: 2026-07-25
+
+### What happened
+
+Configured the Twilio phone number's voice webhook to point at production, via the Twilio REST API (`incomingPhoneNumbers(sid).update({voiceUrl, voiceMethod})`) using the credentials already in `.env.local`, rather than requiring console access.
+
+**Found something worth stopping for before finishing:** the number (`+18314329642`) wasn't freshly purchased for this project — its existing voice webhook was pointed at `lunch-break-ai.vercel.app`, an entirely different, unrelated project. Overwriting that without checking first would have been exactly the kind of "investigate unfamiliar state before overwriting" situation this project's own working agreements call out — stopped and asked before considering the task done. Confirmed by Steve: `lunch-break-ai` is inactive and the number was unused, so the reuse is safe and intentional, not a mistake. `TWILIO_SETUP.md` updated to record this honestly rather than imply the number was bought fresh for StorageAI.
+
+### Verified, not assumed, that production isn't fully live yet
+
+Rather than stop at "webhook URL configured," tested it for real: computed a genuine Twilio signature locally (`twilio.getExpectedTwilioSignature()`, using the real `TWILIO_AUTH_TOKEN` from `.env.local`) and POSTed a properly-signed request straight at `https://storage-ai-sigma.vercel.app/api/twilio/voice`. Got `403` back — meaning the deployed app doesn't yet have a matching `TWILIO_AUTH_TOKEN` to validate against, i.e. Vercel's environment variables haven't been set. This is exactly the pending step already flagged in Phase 38's own `TWILIO_SETUP.md`, now *confirmed* missing rather than just assumed missing. Documented the specific technique (sign a real test request, see whether *that* also 403s) in `TWILIO_SETUP.md`'s troubleshooting section, since it's the only reliable way to tell "Vercel env vars missing" apart from "Twilio console URL misconfigured" — they look identical from the outside.
+
+### Outcome
+
+Twilio's console-side configuration is done and confirmed correct. The one remaining step before a real call can succeed in production — adding the three Twilio environment variables to Vercel and redeploying — is Steve's action; this Claude has no Vercel CLI or console access in this environment to do it directly.

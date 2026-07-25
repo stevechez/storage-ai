@@ -32,20 +32,20 @@ Three new variables, added to `apps/web/.env.local` for this phase (already done
 
 Purchase via Console → Phone Numbers → Buy a Number. Requirements: Voice-capable, US local number. (SMS capability doesn't matter yet — Non-Goals for this phase explicitly exclude SMS.)
 
-Document here once purchased:
-- **Number:** _(fill in — not secret, safe to write in this file)_
+- **Number:** `+18314329642`
 - **Purpose:** primary founder pilot number — every inbound call during founder testing hits this one number, not yet mapped to any specific facility (`telephony_events` has no `facility_id`; see "Why no facility_id" below)
-- **Region:** _(fill in — whatever US region was selected)_
+- **Note:** this number pre-existed on the Twilio account — it was previously configured (voice webhook pointed at a since-inactive project, `lunch-break-ai`) but confirmed unused before being repurposed for StorageAI in this phase. Not a number bought fresh for this project.
 
-### Configure the webhook
+### Webhook configuration
 
-In the Twilio console, open the number's configuration page → **Voice Configuration** → "A call comes in" → **Webhook**, and set the URL to:
+Set via the Twilio REST API (`incomingPhoneNumbers(sid).update({ voiceUrl, voiceMethod })`), not the console UI — same effect, done from a script using the credentials already in `.env.local`. Current configuration, confirmed by reading it back after the update:
 
 ```
-https://storage-ai-sigma.vercel.app/api/twilio/voice
+Voice URL:    https://storage-ai-sigma.vercel.app/api/twilio/voice
+Voice Method: POST
 ```
 
-Method: **HTTP POST**. This must match, byte-for-byte, the URL the app validates the signature against — no trailing slash, `https://` not `http://`. If signature validation starts failing unexpectedly in production, this mismatch is the first thing to check (see Troubleshooting).
+If this ever needs to change (new number, new domain), update it either via the console (number's configuration page → **Voice Configuration** → "A call comes in" → **Webhook**) or the same REST API call. Whichever way, the URL must match, byte-for-byte, what the app validates the signature against — no trailing slash, `https://` not `http://`. If signature validation starts failing unexpectedly, this mismatch is the first thing to check (see Troubleshooting).
 
 ## 4. Local testing
 
@@ -63,12 +63,13 @@ To test against a **real Twilio call** while developing locally, you'd need a tu
 
 ## 5. Production deployment
 
-Not yet done as of this phase. Once ready:
+Status as of this phase:
 
-1. Add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` to the Vercel project's **Settings → Environment Variables** — the same place the Supabase production credentials already live (`turbo.json` only declares variable *names*, never values; see `docs/operations/BACKUP_RECOVERY.md`).
-2. Deploy (push to `main` — Vercel auto-deploys).
-3. Point the Twilio number's webhook at `https://storage-ai-sigma.vercel.app/api/twilio/voice` (step 3 above).
-4. Call the number for real. Confirm: the greeting plays, and a row appears in `telephony_events` in the production database (Supabase Studio, production project).
+- [x] Code deployed (`/api/twilio/voice` live at `https://storage-ai-sigma.vercel.app/api/twilio/voice`, confirmed via `curl` — an unsigned request correctly returns `403`)
+- [x] Twilio webhook URL configured (see above)
+- [ ] **Vercel environment variables — not yet done.** Add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` to the Vercel project's **Settings → Environment Variables** — the same place the Supabase production credentials already live (`turbo.json` only declares variable *names*, never values; see `docs/operations/BACKUP_RECOVERY.md`). Confirmed still missing: a webhook request signed with the real `TWILIO_AUTH_TOKEN` (computed via `twilio.getExpectedTwilioSignature()`, not guessed) still got `403` from production — the only way that happens is if the deployed app doesn't have a matching `TWILIO_AUTH_TOKEN` to check against
+- [ ] After adding the env vars, trigger a new deployment (env var changes don't apply to an already-running deployment) — an empty commit or the Vercel dashboard's "Redeploy" both work
+- [ ] Call the number for real. Confirm: the greeting plays, and a row appears in `telephony_events` in the production database (Supabase Studio, production project)
 
 ## Why no `facility_id`
 
@@ -76,7 +77,15 @@ Not yet done as of this phase. Once ready:
 
 ## Troubleshooting
 
-**Signature validation fails in production (`403 Forbidden` on every call).** Almost always a URL mismatch — the exact string Twilio signs against is the webhook URL configured in its console, not derived from anything else. Confirm the console's webhook URL exactly matches `https://storage-ai-sigma.vercel.app/api/twilio/voice` (no trailing slash, correct protocol). Also confirm `TWILIO_AUTH_TOKEN` in Vercel's environment variables matches the current token in the Twilio console — regenerating the token (Console → Account → API keys & tokens) invalidates the old one immediately.
+**Signature validation fails in production (`403 Forbidden` on every call).** Two different root causes look identical from a caller's perspective — tell them apart with a properly-signed test request rather than guessing:
+
+```js
+import twilio from 'twilio';
+const signature = twilio.getExpectedTwilioSignature(authToken, url, params); // same authToken as .env.local
+// POST to the production URL with X-Twilio-Signature: signature, then compare:
+```
+- If a request signed with the **real** Auth Token still gets `403`: the deployed app doesn't have a matching `TWILIO_AUTH_TOKEN` — check Vercel's environment variables are actually set (this exact scenario happened during Phase 38's production rollout: webhook configured correctly, code deployed correctly, but Vercel env vars weren't set yet, so every signature check failed closed).
+- If it succeeds: the problem is upstream — the URL configured in Twilio's console doesn't exactly match the deployed URL (trailing slash, protocol, wrong path), so Twilio itself is signing against a different string than the app expects.
 
 **Call connects but nothing appears in `telephony_events`.** The endpoint always answers the call first and logs second — a caller hearing the greeting doesn't guarantee the log write succeeded (deliberate: a DB hiccup shouldn't mean a caller hears dead air). Check Vercel's Function Logs for `Failed to log telephony event` — the error object printed there (Postgres error code + message) is the same shape used everywhere else in this app's logging (see `docs/operations/BACKUP_RECOVERY.md` on where those logs live and how long they're retained).
 
