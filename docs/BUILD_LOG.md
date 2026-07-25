@@ -1133,3 +1133,21 @@ Task 1 (Vapi account creation) and the actual running of the setup script both r
 ### Outcome
 
 Everything on this Claude's side of the account-creation boundary is built, tested, and verified — including the one piece (Vapi's own webhook-secret ambiguity) where the honest answer was "the docs don't fully agree with each other," addressed by choosing a simpler design under this app's own control rather than guessing which of two half-documented Vapi mechanisms was correct. What's left is exactly the same shape as Phase 38's remaining steps: run the setup script, add two values to Vercel, place real calls — all documented precisely enough that none of it requires re-deriving anything.
+
+## Phase 39 follow-up — Vapi account live, production verified end-to-end
+
+Date: 2026-07-25
+
+### What happened
+
+Steve created the Vapi account and added `VAPI_API_KEY` to `.env.local` (not `.env.production.local`, same pattern as Twilio's rollout — the script needs the latter). Built `.env.production.local` from what was already sitting in `.env.local` (`VAPI_API_KEY`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`) without ever printing the actual values, then ran `scripts/setup-vapi-assistant.mjs` for real. It worked: created the assistant, imported the Twilio pilot number, printed a fresh `VAPI_WEBHOOK_SECRET` and the new `VAPI_ASSISTANT_ID`.
+
+Added both to Vercel via `vercel env add` (same tooling proven in the Twilio rollout). Getting them live took three attempts: a manual `vercel --prod` from the repo root failed outright (tried to upload the whole 1.8GB monorepo working tree and hit Vercel's 100MB limit — not how this project has ever actually deployed); two follow-up empty-commit pushes both got auto-deploy-canceled with `0ms` build time for a reason the CLI wouldn't surface. Reported this honestly rather than keep guessing blindly, asked Steve to check the Vercel dashboard directly. He redeployed manually from there and it succeeded.
+
+### Verified for real, not assumed
+
+Same discipline as every other rollout this project has done: an unsigned webhook request against the live production URL correctly returns `403`; a request signed with the real `VAPI_WEBHOOK_SECRET` returns `200` — and rather than trust that response, queried `conversation_transcripts` and `calls` directly in production and confirmed both rows genuinely existed with the right data, then cleaned them up.
+
+### Outcome
+
+Phase 39 is fully live: a real call to the pilot number is answered by the Vapi assistant, and the transcript verifiably makes it all the way into the same analysis pipeline manual entry has always used. Only Task 5 (founder verification across real call scenarios) remains, and that's inherently Steve's to do — `docs/telephony/VAPI_SETUP.md` §8 has the checklist. `docs/telephony/VAPI_SETUP.md` updated throughout to reflect verified-live status instead of pending, including an honest note about the deployment hiccup for whoever hits it next.

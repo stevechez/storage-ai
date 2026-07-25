@@ -95,12 +95,19 @@ Verified during Phase 39 development: this produces a `conversation_transcripts`
 
 ## 7. Production status
 
-- [x] `/api/vapi/webhook` deployed and verified locally against a realistic payload
+Status: **done and verified end-to-end**, the same way Twilio's rollout was.
+
+- [x] `/api/vapi/webhook` deployed
 - [x] `conversation_transcripts` table exists in both local and production
 - [x] `PILOT_FACILITY_ID` facility created in both local and production
-- [ ] **Vapi account, assistant, and Twilio number import — pending Steve running the setup script** (needs a Vapi account and API key first)
-- [ ] **`VAPI_WEBHOOK_SECRET` / `VAPI_ASSISTANT_ID` in Vercel — pending**, printed by the setup script once run
-- [ ] **Founder verification (Task 5) — pending**, see test scenarios below
+- [x] Vapi account created, assistant configured, Twilio number imported (`scripts/setup-vapi-assistant.mjs`, run from `.env.production.local` built from what was already in `.env.local`)
+- [x] `VAPI_WEBHOOK_SECRET` / `VAPI_ASSISTANT_ID` added to Vercel, redeployed — took two failed attempts first (see "Deployment hiccup" below) before a manual redeploy from the Vercel dashboard succeeded
+- [x] Verified against real production, not assumed: an unsigned webhook request correctly gets `403`; a request signed with the actual `VAPI_WEBHOOK_SECRET` gets `200` and — confirmed by querying `conversation_transcripts` and `calls` directly, not by trusting the response — both rows genuinely exist. Test rows cleaned up after
+- [ ] **Founder verification (Task 5) — still pending**, see test scenarios below. Everything above proves the plumbing; it doesn't replace placing real calls and checking the assistant's actual conversational behavior
+
+### Deployment hiccup, for the record
+
+Two automatic redeploys (triggered by empty commits, to pick up the newly-added env vars) both got canceled immediately with `0ms` build time, for a reason the CLI wouldn't surface (`vercel inspect` just showed `Canceled`, no detail). A manual redeploy from the Vercel dashboard itself succeeded on the first try. If this happens again: check the dashboard's Deployments tab directly rather than trusting the CLI's `vercel ls`/`vercel inspect` output, which didn't have enough detail to diagnose it from the terminal.
 
 ## 8. Founder verification checklist
 
