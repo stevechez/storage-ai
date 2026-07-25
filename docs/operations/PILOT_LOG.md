@@ -36,4 +36,35 @@ This is chronological and per-entry, not a CRM. No entries exist yet — none ar
 
 ---
 
+## Founder Pilot Facility — 2026-07-25
+
+**What happened:**
+First real end-to-end voice call through the Phase 39 Vapi integration. Steve called the pilot number (+18314329642) and asked about a 10x10 storage unit for next month. The Vapi assistant handled the conversation, and the transcript flowed through the existing analysis pipeline (`logCall()` → `analyzeTranscript()`) exactly like a manually-logged call.
+
+**Customer questions:**
+Asked about a 10x10 unit, timing "next month."
+
+**Customer confusion:**
+None observed — single, clear question.
+
+**Requested improvements:**
+None from this call.
+
+**Bugs discovered:**
+`duration_seconds` on the `conversation_transcripts` row (`vapi_call_id: 019f98fe-5c6c-744f-bcf0-e69d14289dd4`) came back `null`. Root cause: Vapi's real webhook payload puts `startedAt`/`endedAt`/`durationSeconds`/`phoneNumber` directly on `message`, not nested under `message.call` as Vapi's own docs suggested. Fixed in `lib/vapi/webhook.ts`, backfilled this row's duration from its stored `raw_payload`, added a regression test from the real payload. Full writeup in `docs/BUILD_LOG.md`'s "Phase 39 follow-up #2."
+
+**Follow-up required:**
+None — continue working through the remaining founder verification scenarios in `docs/telephony/VAPI_SETUP.md` §8 (availability question, pricing question, office hours, an unanswerable question, a hangup, a very short call).
+
+### Retrospective
+
+- **What worked?** The whole pipeline, end to end, on the first real call — transcript capture, analysis, dashboard rendering all correct. The assistant itself stayed on-script (didn't quote pricing or confirm availability, per its system prompt).
+- **What surprised us?** Vapi's actual webhook payload shape didn't match its own documentation closely enough to trust without verifying against a real delivery — worth remembering for any future Vapi API work, not just this one field.
+- **What confused the operator?** N/A — this was founder testing, not a real operator/customer interaction yet.
+- **What created excitement?** Watching a real phone call turn into a correctly-analyzed dashboard entry with zero manual data entry, for the first time in the product's history.
+- **What should change?** Nothing about the pipeline itself yet — one real call isn't enough evidence. Keep working through the remaining test scenarios before drawing conclusions.
+- **What should remain unchanged?** The decision to store `raw_payload` as `jsonb` from the start — it's the only reason today's bug was a fast, confident fix instead of a guess.
+
+---
+
 _(add the next entry above this line, most recent first)_

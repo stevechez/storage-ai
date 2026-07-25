@@ -1151,3 +1151,25 @@ Same discipline as every other rollout this project has done: an unsigned webhoo
 ### Outcome
 
 Phase 39 is fully live: a real call to the pilot number is answered by the Vapi assistant, and the transcript verifiably makes it all the way into the same analysis pipeline manual entry has always used. Only Task 5 (founder verification across real call scenarios) remains, and that's inherently Steve's to do — `docs/telephony/VAPI_SETUP.md` §8 has the checklist. `docs/telephony/VAPI_SETUP.md` updated throughout to reflect verified-live status instead of pending, including an honest note about the deployment hiccup for whoever hits it next.
+
+## Phase 39 follow-up #2 — first real call surfaces a real parsing bug
+
+Date: 2026-07-25
+
+### What happened
+
+Steve placed the first real founder-verification call (Task 5). It worked — real transcript, correctly bridged into `calls`, correctly analyzed, correctly rendered on the pilot facility's dashboard (intent, unit size, recommended action all sensible). But `duration_seconds` on the `conversation_transcripts` row came back `null`.
+
+Checked the row's stored `raw_payload` (kept specifically for this kind of situation — see Task 3's original design rationale) rather than guessing. Vapi's real payload puts `startedAt`, `endedAt`, `durationSeconds`, and `phoneNumber` directly on `message`, not nested under `message.call` — different from what Vapi's own docs suggested when verified via WebFetch while originally building this. `message.durationSeconds` also comes pre-computed by Vapi (`31.104`), which is better than deriving it from timestamps.
+
+### Fixed
+
+`parseVapiEndOfCallReport()` now reads these fields from the correct location, prefers Vapi's own `durationSeconds` (rounded) over computing it, and falls back to the timestamp computation only if that field is absent. Rewrote `webhook.test.ts`'s fixtures to match the real shape, and added a dedicated regression test built from the actual captured payload (transcript trimmed, IDs kept genuine) — so this specific real-world shape can't silently regress again. Backfilled the one real database row's `duration_seconds` from its own stored `raw_payload` (`31` seconds) rather than leaving verified-real pilot data incomplete.
+
+### Verification
+
+`tsc`, `eslint`, and the full Vitest suite (46/46, up from 43) pass, including the new real-payload regression test (confirmed it fails against the pre-fix code, passes after). Confirmed live: dashboard renders the corrected data for the real call.
+
+### Outcome
+
+This is exactly why `raw_payload` was stored as `jsonb` from day one instead of only keeping extracted fields — a parsing assumption verified against documentation still turned out wrong against reality, and having the raw artifact meant this was a quick, confident fix and a real backfill instead of a permanently-incomplete row and a guess.

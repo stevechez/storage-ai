@@ -109,14 +109,18 @@ Status: **done and verified end-to-end**, the same way Twilio's rollout was.
 
 Two automatic redeploys (triggered by empty commits, to pick up the newly-added env vars) both got canceled immediately with `0ms` build time, for a reason the CLI wouldn't surface (`vercel inspect` just showed `Canceled`, no detail). A manual redeploy from the Vercel dashboard itself succeeded on the first try. If this happens again: check the dashboard's Deployments tab directly rather than trusting the CLI's `vercel ls`/`vercel inspect` output, which didn't have enough detail to diagnose it from the terminal.
 
+### Real-payload correction, for the record
+
+The first real call (start of Task 5 below) surfaced a genuine gap between Vapi's documentation and its actual webhook payload: `startedAt`/`endedAt`/`durationSeconds`/`phoneNumber` all live directly on `message`, not nested under `message.call` the way Vapi's own docs suggested when checked via WebFetch while building this. Fixed in `lib/vapi/webhook.ts`, with a regression test built from the real captured payload (`webhook.test.ts`) so this can't silently regress. This is exactly why `conversation_transcripts.raw_payload` stores the entire raw webhook body — it made this a quick, confident fix instead of a guess.
+
 ## 8. Founder verification checklist
 
 Once the assistant is live, place real calls covering (per the handoff's Task 5):
 
+- [x] Move-in timing question — first real call, 2026-07-25: asked about a 10x10 unit for "next month." Transcript captured correctly, `analyzeTranscript()` correctly extracted intent/unit size, correctly showed `timeline: "Not specified"` (accurate — "next month" isn't an urgency keyword) rather than misreading it as urgent
 - [ ] Unit availability question
 - [ ] Pricing question
 - [ ] Office hours question
-- [ ] Move-in timing question
 - [ ] A question the assistant genuinely can't answer
 - [ ] Caller hangs up mid-conversation
 - [ ] Very short call (a few seconds)
