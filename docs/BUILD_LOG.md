@@ -948,3 +948,41 @@ One new item surfaced while gathering evidence for the `leads`/`units`/`conversa
 ### Outcome
 
 Six real, register-sourced items resolved (one more than planned — the `mentionsAvailability` dead code was a bonus catch from writing the Task 4 tests), all verified rather than assumed, all with zero change to customer-visible behavior except a strictly better one (a duplicate signup no longer looks like an error). What's left in the register is now honestly and specifically prioritized instead of just accumulated — and the headline finding of the whole phase is a reassuring one: there was no hidden customer-blocking debt to find.
+
+## Phase 38 — Telephony Foundation
+
+Date: 2026-07-25
+
+### Goal
+
+Prove StorageAI can reliably receive a real phone call — nothing more. No AI, no recording, no routing, no dashboard changes. Twilio's sprint begins here (Vapi is explicitly Phase 39, not sooner).
+
+### Scope note: what this Claude could and couldn't do
+
+Tasks 1 (Twilio account) and 2 (phone number purchase) require real account creation and payment authorization — outside what this Claude can do. Steve created the account and added `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_FROM_NUMBER` to `apps/web/.env.local` directly, mid-phase. Everything else (Tasks 3–5) was built to make wiring up production a matter of adding the same three variables to Vercel and pointing the number's webhook at the right URL — not a redesign once that happens.
+
+### Completed — Task 3: incoming voice webhook
+
+`POST /api/twilio/voice` (`apps/web/src/app/api/twilio/voice/route.ts`). Validates the `X-Twilio-Signature` header using the official `twilio` npm package's `validateRequest()` — added as a new dependency deliberately, not hand-rolled, since a security-critical HMAC signature check is exactly the kind of thing worth trusting a vendor SDK for rather than risk a subtle bug in (the project already sets this precedent with `@supabase/supabase-js`). Validation only runs when `NODE_ENV === 'production'`; local development logs a clear "skipped" message and proceeds, per the task's own explicit allowance. Returns TwiML built via `twilio.twiml.VoiceResponse` (not hand-written XML) with a single `<Say>`: "Thank you for calling StorageAI. This system is currently under founder testing."
+
+### Completed — Task 4: call event logging
+
+New `telephony_events` table (`supabase/migrations/20260725150000_add_telephony_events.sql`) — deliberately decoupled from `calls`: no `facility_id` (one pilot number, not yet mapped to any facility), no transcript, nothing that would make a raw phone call appear as a leasing opportunity anywhere. Captures Call SID (unique), from/to numbers, direction, status, received-at timestamp. `parseTwilioVoiceParams()` (pure, TDD'd) maps Twilio's raw webhook fields into this shape; `logTelephonyEvent()` writes it.
+
+**Real bug found and fixed during verification, not assumed away:** the first end-to-end test (`curl` simulating a Twilio POST against the local dev server) returned the correct TwiML but silently failed to log — `permission denied for table telephony_events`. The initial migration was missing the explicit `grant all privileges ... to service_role` statement every table added after the initial schema migration needs (confirmed by checking exactly how `early_access_signups`' migration did it) — the original schema-wide grant only covers tables that existed when it ran. Fixed in the migration file and applied to the local database; re-verified end-to-end afterward, including two edge cases: a missing `CallSid` (still answers, logs nothing, doesn't crash) and a duplicate `CallSid` from a simulated webhook retry (still answers, logs the constraint violation clearly, doesn't corrupt the table).
+
+### Completed — Task 5: documentation
+
+`docs/telephony/TWILIO_SETUP.md` — account setup, environment variables (with the exact names Steve actually used, `TWILIO_FROM_NUMBER` not `TWILIO_PHONE_NUMBER`), local testing (the exact `curl` command used to verify this phase's work), production deployment steps (not yet done), why `telephony_events` has no `facility_id`, and a troubleshooting section written from what was actually learned building this, not generic advice. Also added `apps/web/.env.example` (didn't exist before) and proactively declared the three new Twilio variables in `turbo.json`'s `build.env` array — this project already has one documented incident (`BUILD_LOG.md`, Sprint-era Vercel fix) of a server-only env var getting silently stripped by Turborepo's strict mode until declared there; applying that lesson before hitting it again, not after.
+
+### Verification
+
+`tsc --noEmit`, `eslint`, and the full Vitest suite (39/39, up from 37) pass. `pnpm build` succeeds and correctly lists the new `/api/twilio/voice` route. End-to-end verified against the real local database via `curl`, including the permission-grant bug found and fixed mid-verification, and both edge cases above. All test rows cleaned up afterward.
+
+### Deferred, on purpose
+
+Twilio's phone number "Purpose/Region" fields in `TWILIO_SETUP.md` are left as fill-in-the-blank pending Steve confirming the actual number and region purchased. Production Vercel environment variables and the Twilio console's webhook URL are not yet configured — the local `.env.local` credentials prove the code works, not that the production path is wired up yet.
+
+### Outcome
+
+The plumbing is proven locally, including one real bug (a missing grant) that would have silently swallowed every real call's log entry in production had it shipped unverified. What's left before a real phone can ring into this system: Steve configuring Vercel's environment variables and Twilio's webhook URL, both documented step-by-step in `TWILIO_SETUP.md`. No AI, recording, or routing was added — exactly as scoped.

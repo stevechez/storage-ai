@@ -41,8 +41,7 @@ See the most recent `##` entry in `docs/BUILD_LOG.md` for the current phase, its
 Do not implement future integrations yet:
 
 - Vapi
-- Twilio
 - Stripe
 - PMS APIs
 
-until their sprint begins.
+until their sprint begins. (Twilio's sprint began Phase 38 — inbound voice webhook only, no AI/recording/routing yet; see `docs/telephony/TWILIO_SETUP.md`. Vapi is explicitly Phase 39, not sooner.)
