@@ -1,6 +1,6 @@
 import type { OperatorAction } from '@/types/leasing';
 import { OpportunityCard } from './opportunity-card';
-import { formatPhoneNumber } from '@/lib/storage/format';
+import { ClickablePhone } from './clickable-phone';
 
 export function OperatorActions({ actions }: { actions: OperatorAction[] }) {
 	if (actions.length === 0) {
@@ -15,9 +15,11 @@ export function OperatorActions({ actions }: { actions: OperatorAction[] }) {
 		<div className="space-y-4">
 			{actions.map(action => (
 				<div key={action.callId} className="space-y-2">
-					<div className="font-semibold">{formatPhoneNumber(action.callerPhone)}</div>
+					<div className="font-semibold">
+						<ClickablePhone phone={action.callerPhone} />
+					</div>
 
-					<OpportunityCard opportunity={action.opportunity} />
+					<OpportunityCard opportunity={action.opportunity} actionLabel="Suggested Next Step" />
 				</div>
 			))}
 		</div>

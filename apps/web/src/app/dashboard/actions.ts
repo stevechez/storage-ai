@@ -42,20 +42,30 @@ export async function logCallAction(
 	return { status: 'success', message: "Call logged — check Today's Actions for the analysis." };
 }
 
-export async function updateFollowUpStatusAction(formData: FormData) {
+export interface UpdateStatusFormState {
+	status: 'idle' | 'error';
+	message?: string;
+}
+
+export async function updateFollowUpStatusAction(
+	_prevState: UpdateStatusFormState,
+	formData: FormData,
+): Promise<UpdateStatusFormState> {
 	const callId = formData.get('callId');
 	const status = formData.get('status');
 
 	if (typeof callId !== 'string' || typeof status !== 'string') {
-		return;
+		return { status: 'idle' };
 	}
 
 	try {
 		await updateFollowUpStatus(callId, status as OpportunityStatus);
 	} catch (error) {
 		console.error('Failed to update follow-up status', error);
-		return;
+		return { status: 'error', message: "That didn't save — try again." };
 	}
 
 	revalidatePath('/dashboard');
+
+	return { status: 'idle' };
 }

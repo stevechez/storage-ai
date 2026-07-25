@@ -685,3 +685,60 @@ Task 2 (first customer journey audit) walked the actual journey end-to-end: crea
 ### Outcome
 
 The product now has a verified, not just assumed, first-customer journey — and the one real bug it surfaced was fixed and confirmed before any real customer could see it.
+
+## Phase 31 — Founder Experience Refinement
+
+Date: 2026-07-24
+
+### Goal
+
+Polish-only pass across five areas (Dashboard Clarity, Copy, Empty States, Error Recovery, Consistency) — explicitly no new features, no architecture changes. Success is reduced operator hesitation, not new capability.
+
+### Findings, ranked by impact
+
+1. **Phone numbers weren't clickable (High).** Both "Today's Actions" and "Active Opportunities" recommend the operator call the customer, but the phone number was rendered as plain text (`formatPhoneNumber()`), forcing a manual dial on every follow-up. Fixed with a new shared `ClickablePhone` component (`tel:` link, falls back to plain text when there's no number) used in both `operator-actions.tsx` and `leasing-queue.tsx`. Verified live: every phone number on the dashboard now renders as an `href="tel:+1..."` link.
+
+2. **Status updates failed silently (High).** `updateFollowUpStatusAction` (Mark Contacted/Converted/Lost) caught DB errors and only `console.error`'d them — the operator would click a button, nothing would visibly happen, and they'd have no way to know whether it worked. Fixed by converting the action to `useActionState` (`(prevState, formData) => Promise<UpdateStatusFormState>`) and wrapping the buttons in a new `FollowUpStatusForm` client component that renders `"That didn't save — try again."` on failure. Verified via `tsc`, `eslint`, the full Vitest suite (31 passed), and live confirmation the buttons still render correctly.
+
+3. **Copy (checked, no changes needed).** Reviewed all operator-facing copy for jargon or internal terminology — none found. Existing strings ("No phone system connected yet — until there is, log a call here...") already write from the operator's side of the screen.
+
+4. **Empty states (checked, no changes needed).** Every empty state already explains what's missing and what happens next (e.g., "No leasing opportunities yet. As soon as a customer calls, StorageAI will capture it here.") rather than just showing blank space.
+
+5. **Visual consistency (checked, no changes needed).** Border-radius (`rounded-lg` cards vs. `rounded-md` buttons/inputs) and padding (`p-5` dominant) are consistent and intentional, not accidental drift.
+
+### Outcome
+
+Two real, verified gaps between what the UI recommends ("call the customer," "update status") and what it actually let the operator do — both fixed, tested, and confirmed live. The other three review areas were genuinely already in good shape; no changes invented to justify the pass.
+
+## Phase 32 — Operator Trust & Transparency Review
+
+Date: 2026-07-24
+
+### Goal
+
+Not a feature phase. Review whether operators can understand *why* StorageAI's outputs (priority, recommended action, revenue estimate) say what they say — copy/labeling only, no changes to the underlying analysis logic.
+
+### Confirmed problems (fixed)
+
+1. **The same call showed two different "Recommended Action" values with no explanation why.** Traced live on the dashboard: a call in "new"/"contacted" status appears in both Today's Actions and Active Opportunities. Today's Actions overrides the action text with an urgency instruction (`getTodaysActions()` → "Call customer immediately." / "Follow up today."), while Active Opportunities shows the original content-based action from `analyzeTranscript()` ("Send pricing and availability"). Both were labeled identically as "Recommended Action," so the same call looked like it was giving contradictory advice. Fixed by giving `OpportunityCard` an optional `actionLabel` prop; Today's Actions now reads "Suggested Next Step" (urgency) while Active Opportunities keeps "Recommended Action" (content) — same data, now honestly labeled as two different questions.
+
+2. **Priority had no visible reasoning.** The card showed "Priority: High" in red with nothing explaining why. Since `detectPriority()` is driven entirely by whether a timeline keyword was found, the reasoning was already fully derivable from data already on the card. Added `describePriorityReason()` (TDD, `lib/storage/intelligence.test.ts`) — a pure function that reads back the actual detected timeline, e.g. `Customer mentioned a timeline: "asap".` or `No timeline mentioned yet.` — rendered under the Priority field.
+
+3. **Opportunity data was presented as flat fact, with no signal it's an inferred read of a transcript** — inconsistent with `RevenueImpactCard`, which already discloses its estimate is "not real billing data." Added a matching disclosure line to `OpportunityCard`: "Based on an automatic read of the call — always confirm details with the customer."
+
+### Checked, no problem found
+
+- **Copy/language audit (Task 4):** reviewed all AI-related wording (`OpportunityCard`, `RevenueImpactCard`, `ResponseDraftCard`, `DemoBanner`, `LogCallForm`, `dashboard/error.tsx`) — no overconfident claims ("will convert," "knows"), no unexplained jargon. Already written in the hedged, operator-facing style Phase 32 asked for.
+- **Empty/error states:** dashboard error boundary already avoids blaming the operator and gives a concrete next step ("Try again — if it keeps happening, that's worth telling us about.").
+
+### Documented, not built
+
+- `OpportunityPriority`'s `'low'` value is never actually produced by `detectPriority()` (only `'high'`/`'medium'` occur in practice) — logged in `TECH_DEBT_REGISTER.md` rather than changed, since altering detection logic is out of scope for a labeling-only phase.
+
+### Verification
+
+`tsc --noEmit`, `eslint`, and the full Vitest suite (33/33, up from 31) all pass. Confirmed live against the dev server: Today's Actions cards render "Suggested Next Step," Active Opportunities cards render "Recommended Action," priority reasoning renders with the real detected timeline value, and the new disclosure line renders on every opportunity card.
+
+### Outcome
+
+The dashboard no longer shows two different "recommended" instructions for the same call under an identical label, and every AI-derived field on the opportunity card now says why it says what it says — without touching any analysis logic or adding a new capability.

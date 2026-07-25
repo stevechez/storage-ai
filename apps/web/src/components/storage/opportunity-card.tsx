@@ -1,4 +1,5 @@
 import type { LeasingOpportunity, OpportunityIntent, OpportunityPriority } from '@/types/leasing';
+import { describePriorityReason } from '@/lib/storage/intelligence';
 
 const INTENT_LABEL: Record<OpportunityIntent, string> = {
 	rental: 'Wants to rent a unit',
@@ -19,7 +20,13 @@ const PRIORITY_COLOR: Record<OpportunityPriority, string> = {
 	low: 'text-gray-500',
 };
 
-export function OpportunityCard({ opportunity }: { opportunity: LeasingOpportunity }) {
+export function OpportunityCard({
+	opportunity,
+	actionLabel = 'Recommended Action',
+}: {
+	opportunity: LeasingOpportunity;
+	actionLabel?: string;
+}) {
 	return (
 		<div className="border rounded-lg p-5">
 			<div className="text-sm text-gray-500">Rental Opportunity</div>
@@ -45,12 +52,17 @@ export function OpportunityCard({ opportunity }: { opportunity: LeasingOpportuni
 					<div className={`font-semibold ${PRIORITY_COLOR[opportunity.priority]}`}>
 						{PRIORITY_LABEL[opportunity.priority]}
 					</div>
+					<div className="text-xs text-gray-400">{describePriorityReason(opportunity)}</div>
 				</div>
 
 				<div>
-					<div className="text-sm text-gray-500">Recommended Action</div>
+					<div className="text-sm text-gray-500">{actionLabel}</div>
 					<div className="font-semibold">{opportunity.recommendedAction}</div>
 				</div>
+			</div>
+
+			<div className="mt-4 text-xs text-gray-400">
+				Based on an automatic read of the call — always confirm details with the customer.
 			</div>
 		</div>
 	);

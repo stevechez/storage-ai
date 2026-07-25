@@ -44,6 +44,12 @@ function detectRecommendedAction(intent: OpportunityIntent, transcript: string):
 	return 'Follow up with renter';
 }
 
+export function describePriorityReason(opportunity: LeasingOpportunity): string {
+	return opportunity.timeline
+		? `Customer mentioned a timeline: "${opportunity.timeline}".`
+		: 'No timeline mentioned yet.';
+}
+
 export function analyzeTranscript(transcript: string): LeasingOpportunity {
 	const intent = detectIntent(transcript);
 	const unitSize = detectUnitSize(transcript);

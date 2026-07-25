@@ -24,6 +24,14 @@ Captured, not fixed. Every item below was verified directly (code review + local
 **Estimated effort:** Small — add a unique constraint, decide on conflict behavior (reject vs. upsert)
 **Priority:** Low
 
+## Communication Clarity
+
+### `OpportunityPriority`'s `'low'` value is never actually produced
+**Risk:** None — not a bug, just an unreachable branch
+**User impact:** None. `detectPriority()` in `lib/storage/intelligence.ts` only ever returns `'high'` (timeline detected) or `'medium'` (no timeline) — every downstream label/color/action map defines a `'low'` case that real analysis can never trigger. Found during the Phase 32 trust/transparency review while tracing where "Priority" values come from
+**Estimated effort:** Small — either remove `'low'` from the type and its maps, or give `detectPriority()` a real third tier if one is ever wanted. Changing detection logic is out of scope for a copy/clarity phase, so left alone
+**Priority:** Low
+
 ## Dead Code / Schema
 
 ### `leads`, `units`, `conversations` tables are fully unreferenced
