@@ -12,6 +12,11 @@ export function IntegrationConfidence() {
 					phone still rings the same way it does today.
 				</p>
 				<p className="mt-4 text-steel">
+					Calls reach IntelliLease through a dedicated number set up specifically for your facility.
+					During early access, that&apos;s configured directly with you as part of onboarding —
+					not a self-serve signup yet.
+				</p>
+				<p className="mt-4 text-steel">
 					Built to work alongside the property management software you already use — SiteLink,
 					storEDGE, and others. Direct integrations are being prioritized based on what early
 					operators actually need, not built speculatively ahead of real demand.

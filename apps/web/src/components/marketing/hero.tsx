@@ -40,35 +40,41 @@ export function Hero() {
 
 function CallTransformation() {
 	return (
-		<div className="relative mx-auto w-full max-w-sm">
-			<div className="absolute -inset-4 rounded-3xl bg-ink/5" aria-hidden="true" />
-			<div className="relative h-64 rounded-2xl border border-steel/20 bg-white shadow-xl shadow-ink/5">
-				<div className="absolute inset-0 animate-[card-fade-a_8s_ease-in-out_infinite] rounded-2xl bg-white p-6">
-					<div className="flex items-center gap-2">
-						<span className="relative flex h-2.5 w-2.5">
-							<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-signal/60" />
-							<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-signal" />
-						</span>
-						<p className="font-mono text-xs tracking-wide text-steel uppercase">9:42 PM · Missed Call</p>
-					</div>
-					<p className="mt-6 text-2xl font-semibold text-ink">&quot;Need a 10x15, ASAP.&quot;</p>
-					<p className="mt-3 text-sm text-steel">Nobody was at the desk. The renter hung up not knowing if anyone heard them.</p>
-				</div>
+		<div className="mx-auto w-full max-w-sm">
+			<p className="text-center font-mono text-xs tracking-[0.2em] text-steel uppercase lg:text-left">
+				For example
+			</p>
 
-				<div className="absolute inset-0 animate-[card-fade-b_8s_ease-in-out_infinite] rounded-2xl bg-ink p-6 text-concrete">
-					<p className="font-mono text-xs tracking-wide text-lamp uppercase">Recommended Action</p>
-					<p className="mt-6 text-2xl font-semibold">Call back — 10x15 unit</p>
-					<dl className="mt-4 space-y-1 text-sm text-concrete/70">
-						<div className="flex justify-between">
-							<dt>Timeline</dt>
-							<dd className="text-concrete">ASAP</dd>
-						</div>
-						<div className="flex justify-between">
-							<dt>Priority</dt>
-							<dd className="font-semibold text-signal">High</dd>
-						</div>
-					</dl>
+			<div className="mt-4 rounded-2xl border border-steel/20 bg-white p-6 shadow-xl shadow-ink/5">
+				<div className="flex items-center gap-2">
+					<span className="relative flex h-2.5 w-2.5">
+						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-signal/60" />
+						<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-signal" />
+					</span>
+					<p className="font-mono text-xs tracking-wide text-steel uppercase">9:42 PM · Missed Call</p>
 				</div>
+				<p className="mt-6 text-2xl font-semibold text-ink">&quot;Need a 10x15, ASAP.&quot;</p>
+				<p className="mt-3 text-sm text-steel">Nobody was at the desk. The renter hung up not knowing if anyone heard them.</p>
+			</div>
+
+			<div className="flex flex-col items-center gap-1 py-3" aria-hidden="true">
+				<span className="text-lg text-signal">↓</span>
+				<span className="font-mono text-[11px] tracking-[0.15em] text-steel uppercase">IntelliLease answers</span>
+			</div>
+
+			<div className="rounded-2xl bg-ink p-6 text-concrete shadow-xl shadow-ink/10">
+				<p className="font-mono text-xs tracking-wide text-lamp uppercase">Recommended Action</p>
+				<p className="mt-6 text-2xl font-semibold">Call back — 10x15 unit</p>
+				<dl className="mt-4 space-y-1 text-sm text-concrete/70">
+					<div className="flex justify-between">
+						<dt>Timeline</dt>
+						<dd className="text-concrete">ASAP</dd>
+					</div>
+					<div className="flex justify-between">
+						<dt>Priority</dt>
+						<dd className="font-semibold text-signal">High</dd>
+					</div>
+				</dl>
 			</div>
 		</div>
 	);

@@ -1358,3 +1358,27 @@ Two real gaps did survive the check: no founder name anywhere (just "the person 
 ### Outcome
 
 Two small, honest, text-only additions — not the full hero rewrite / new-sections plan originally proposed, since most of what that plan targeted was already built. Not yet committed — awaiting Steve's review.
+
+## Second feedback round — hero visibility and capture mechanism
+
+Date: 2026-07-25
+
+### What happened
+
+A second piece of external feedback came in, this time clearly grounded in the real site (quotes matched the actual copy word-for-word, unlike the first round). Two real findings survived scrutiny:
+
+1. **"Why trust it" claimed not visible** — checked directly against the raw server-rendered HTML (`curl`, no JS) and it's there, plus linked from the nav. Not a real gap — most likely the reviewer didn't scroll, or worked from a partial excerpt. No action taken.
+2. **No proof of performance visible** and **capture mechanism never explained** — both real. The hero's missed-call → recommended-action example already existed, but only as an 8-second auto-cycling CSS animation between two absolutely-positioned, overlapping cards — a screenshot or quick glance catches exactly one frame, never the transformation. Likely why both feedback rounds independently concluded there was "no proof": the proof existed but wasn't visible on demand.
+
+### What changed
+
+- **`hero.tsx`'s `CallTransformation`** — rebuilt from an animated two-state overlay into two always-visible stacked cards (same real copy: the "Need a 10x15, ASAP" example, unchanged) connected by a labeled arrow ("↓ IntelliLease answers") and a small "For example" caption above. Now legible in a single glance or screenshot, with no dependency on animation timing. Removed the now-unused `card-fade-a`/`card-fade-b` keyframes from `globals.css`.
+- **`integration-confidence.tsx`** — added a sentence explaining the actual capture mechanism: a dedicated number set up per facility, configured hands-on during early access. Steve's own drafted wording for this ("connects to your facility phone line") was rejected before writing anything, on a factual check: `TWILIO_SETUP.md` documents a dedicated Twilio number that Vapi answers, with zero mention anywhere of call-forwarding integration with an operator's existing line. Publishing "connects to your phone line" would have described a forwarding integration that doesn't exist. Rewrote to state what's actually true (a dedicated number, hands-on setup) instead of the technically inaccurate draft, and flagged the substitution rather than silently changing it.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46) all clean. Both changes confirmed live against the local dev server via real-browser screenshot — the stacked-card hero renders both states simultaneously as intended, and the integration section reads cleanly with all three paragraphs.
+
+### Outcome
+
+Highest-value, lowest-risk fix (hero legibility) and the one genuinely-blocked item (capture-mechanism honesty) both shipped, using only real, already-existing product truth — no new claims, no invented mechanism, no case study. Not yet committed — awaiting Steve's review.
