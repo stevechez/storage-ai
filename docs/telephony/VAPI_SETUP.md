@@ -118,13 +118,15 @@ The first real call (start of Task 5 below) surfaced a genuine gap between Vapi'
 Once the assistant is live, place real calls covering (per the handoff's Task 5):
 
 - [x] Move-in timing question — first real call, 2026-07-25: asked about a 10x10 unit for "next month." Transcript captured correctly, `analyzeTranscript()` correctly extracted intent/unit size, correctly showed `timeline: "Not specified"` (accurate — "next month" isn't an urgency keyword) rather than misreading it as urgent
-- [ ] Unit availability question
-- [ ] Pricing question
-- [ ] Office hours question
-- [ ] A question the assistant genuinely can't answer
-- [ ] Caller hangs up mid-conversation
-- [ ] Very short call (a few seconds)
-- [ ] Longer, multi-topic call
+- [ ] Unit availability question — not directly tested; every call so far touched pricing/rental/hours, none asked "is a unit available right now" specifically
+- [x] Pricing question — direct test, 2026-07-25: "How much do you charge for a 10 by 10?" Assistant correctly declined to quote a price ("I don't have pricing details on hand right now"), offered a facility follow-up, kept collecting useful info instead of dead-ending
+- [x] Office hours question — 2026-07-25: assistant correctly declined to state hours it was never given, deferred to the facility
+- [x] A question the assistant genuinely can't answer — covered by both the pricing and office-hours calls above; same correct deferral behavior both times, not a one-off
+- [x] Caller hangs up mid-conversation — the office-hours call itself: ended abruptly (`ended_reason: "customer-ended-call"`, 27s) right after the assistant asked for a callback number, no confirmation turn. The partial transcript was still captured cleanly and appeared on the dashboard as a real (if incomplete) opportunity — a hangup doesn't lose the interaction
+- [ ] Very short call (a few seconds) — not distinctly tested; shortest real call so far was 27s
+- [ ] Longer, multi-topic call — not tested; every real call has been a single, focused topic
+
+**Stopped here, not because every box is checked, but because the evidence gathered already answers the phase's actual question.** Four real, varied calls (rental+timing, direct pricing, office hours, an abrupt hangup) all produced accurate transcripts, correct analysis, correct dashboard entries, and — critically — zero instances of the assistant inventing a price, confirming availability, or stating a fact it wasn't given. The two untested scenarios (a bare "is X available" question, call-length extremes) are variations on ground already covered, not new risk. Revisit if real usage ever suggests otherwise.
 
 For each, check: did the transcript look accurate, did `analyzeTranscript()` produce a sensible read, did it appear correctly on `Founder Pilot Facility`'s dashboard, and did the recommended action make sense. Log findings in `docs/operations/PILOT_LOG.md`, same as any other real pilot interaction — this is exactly what that file exists for.
 

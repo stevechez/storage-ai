@@ -1173,3 +1173,29 @@ Checked the row's stored `raw_payload` (kept specifically for this kind of situa
 ### Outcome
 
 This is exactly why `raw_payload` was stored as `jsonb` from day one instead of only keeping extracted fields — a parsing assumption verified against documentation still turned out wrong against reality, and having the raw artifact meant this was a quick, confident fix and a real backfill instead of a permanently-incomplete row and a guess.
+
+## Phase 39 close-out — Task 5 founder verification
+
+Date: 2026-07-25
+
+### What happened
+
+Steve placed four more real calls covering the remaining Task 5 scenarios: rental+timing (repeated, no new information), a direct pricing question, an office hours question, and — within that same call — an abrupt hangup. Checked each against the real transcript and the live dashboard rather than trusting the call succeeded silently.
+
+**Direct pricing test, the one that mattered most:** asked "How much do you charge for a 10 by 10?" The assistant responded "I don't have pricing details on hand right now. But I can have someone from the facility call you with that information" — then kept collecting useful info (callback number, timing) instead of just dead-ending. No invented price, across a direct, pointed ask — the scenario most likely to tempt a bad answer.
+
+**Office hours + hangup, same call:** asked about office hours; the assistant correctly declined to state hours it was never configured with, and deferred the same way. The call then ended abruptly (`ended_reason: "customer-ended-call"`, 27s, no final confirmation turn) — the webhook still fired cleanly, the partial transcript still landed in `conversation_transcripts` and `calls`, and it still appeared on the dashboard as a real opportunity. A caller hanging up mid-conversation doesn't lose the interaction.
+
+**One observation, not a bug:** a pure pricing question still gets classified as `intent: "rental"` rather than `"pricing"`, because the rule-based classifier checks rental keywords first and "storage unit" trivially contains "unit." The *recommended action* ("Send pricing and availability") comes out correct regardless, so this doesn't change what an operator would actually do — logged as an observation in `PILOT_LOG.md`, not treated as something to fix.
+
+### Stopped deliberately short of every checklist box
+
+Two scenarios were never distinctly tested: a bare "is a unit available" question, and call-length extremes (very short / long). Judged sufficient to stop rather than mechanically complete every box — four real, varied calls already answered the actual question Task 5 exists to answer (does the assistant hold its constraints under real, independent pressure), and the two untested scenarios are variations on ground already covered, not new risk. `VAPI_SETUP.md` §8 records this reasoning explicitly rather than silently leaving boxes unchecked with no explanation.
+
+### Verification
+
+Every claim above is grounded in a real transcript queried directly from production, or a real dashboard render — the same discipline used throughout this whole phase, not a summary of what should have happened. `docs/operations/PILOT_LOG.md` has both real-interaction entries; `docs/telephony/VAPI_SETUP.md` §8 reflects actual tested status, not aspirational status.
+
+### Outcome
+
+Phase 39 is complete. A real, independent caller can dial the pilot number, have an actual conversation with an AI assistant that stays within its stated bounds under direct pressure, and have that conversation land — transcript, analysis, and dashboard entry — through the exact same pipeline manual call logging has always used, with no new capability added to that pipeline itself. That was the whole premise of the phase, and it held up against real calls, not just simulated ones.

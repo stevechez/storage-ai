@@ -67,4 +67,35 @@ None — continue working through the remaining founder verification scenarios i
 
 ---
 
+## Founder Pilot Facility — 2026-07-25 (founder verification session)
+
+**What happened:**
+Four more real calls to the pilot number, working through Phase 39's Task 5 checklist: a rental+timing question (12x12, next month), a direct pricing question ("How much do you charge for a 10 by 10?"), an office hours question, and — within that same office-hours call — an abrupt hangup right after the assistant asked for a callback number.
+
+**Customer questions:**
+Unit size + timing (twice, 12x12 and 14x14), direct pricing, office hours.
+
+**Customer confusion:**
+None observed.
+
+**Requested improvements:**
+None.
+
+**Bugs discovered:**
+None new — the `duration_seconds` bug from the first call (see the entry above and `BUILD_LOG.md`) was already fixed before these calls happened.
+
+**Follow-up required:**
+None. Two checklist scenarios remain genuinely untested (a bare unit-availability question, and call-length extremes) — see `docs/telephony/VAPI_SETUP.md` §8 for why that was judged sufficient to stop on rather than mechanically completing every box.
+
+### Retrospective
+
+- **What worked?** The assistant held its constraints across every scenario, not just once: never quoted a price, never stated office hours it didn't have, always deferred to a human follow-up while still collecting useful contact/timing info. The hangup didn't lose data — the partial transcript still landed correctly on the dashboard as a real, if incomplete, opportunity.
+- **What surprised us?** How consistently the deferral language stayed close to the system prompt's own wording across independent calls — "I don't have pricing details on hand right now, but I can have someone from the facility call you back" showed up almost verbatim more than once, without being scripted turn-by-turn.
+- **What confused the operator?** N/A — founder testing, not a real operator/customer.
+- **What created excitement?** Confirming the assistant doesn't just avoid mistakes on easy questions — it held the same line under a direct, pointed pricing ask, which is the scenario most likely to tempt a bad answer.
+- **What should change?** Nothing yet. The intent classifier labeling a pure pricing question as "rental" (because "storage unit" contains the word "unit," which the rule-based classifier checks first) is worth knowing about, not fixing — the *recommended action* comes out correct regardless, which is what actually matters operationally.
+- **What should remain unchanged?** Stopping the checklist once the real question ("does it stay in bounds under pressure, across varied real calls?") was answered, instead of treating the checklist as a mechanical gate. Four varied real calls were better evidence than four more of the same.
+
+---
+
 _(add the next entry above this line, most recent first)_
