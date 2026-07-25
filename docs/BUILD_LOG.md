@@ -1382,3 +1382,99 @@ A second piece of external feedback came in, this time clearly grounded in the r
 ### Outcome
 
 Highest-value, lowest-risk fix (hero legibility) and the one genuinely-blocked item (capture-mechanism honesty) both shipped, using only real, already-existing product truth — no new claims, no invented mechanism, no case study. Not yet committed — awaiting Steve's review.
+
+## Phase 41 — Founder Pilot Provisioning
+
+Date: 2026-07-25
+
+### Goal
+
+Turn IntelliLease from a single-facility proof of concept into something a second real operator
+can be onboarded onto by configuration alone — no application code changes — while deliberately
+keeping the process manual. Explicit non-goals: no redesign, no Stripe/billing, no self-service
+onboarding, no PMS integrations, no premature automation.
+
+### Task 1 — Architecture audit
+
+Grepped the entire codebase for hardcoded facility/organization identifiers rather than assuming
+scope. Found the problem was narrower than the phase brief implied: exactly one real blocker
+existed — `lib/vapi/transcripts.ts` hardcoded `PILOT_FACILITY_ID` for every Vapi call, regardless
+of which number was actually dialed. `DEMO_FACILITY_ID`, the dashboard's unauthenticated
+`?facility=` routing, and the global `VAPI_WEBHOOK_SECRET` were all confirmed legitimate/
+acceptable-for-this-stage, not hidden blockers. Full findings, categorized, in
+`docs/architecture/FOUNDER_DEPENDENCY_AUDIT.md` (Task 4's routing trace folded into the same
+file rather than a separate one, since it isn't a separately listed deliverable and the content
+overlaps almost entirely).
+
+### Tasks 3 + 4 — Configuration separation and routing fix
+
+Added `facilities.twilio_phone_number` (unique) and `facilities.vapi_assistant_id` columns
+(`supabase/migrations/20260725211357_add_facility_telephony_mapping.sql`), plus a one-time data
+migration recording the existing Founder Pilot Facility's real number (`+18314329642`) into the
+new column — removing the hardcoding without losing the mapping. Added
+`getFacilityByPhoneNumber()` (`lib/storage/facility.ts`) and rewired
+`processVapiEndOfCallReport()` to resolve the facility from `report.calledNumber` (already parsed
+by Phase 39's webhook code, just never used for anything) instead of the constant, throwing a
+clear error — and writing nothing — if a number isn't mapped to any facility. Deleted the now-dead
+`PILOT_FACILITY_ID` constant.
+
+Verified against real webhook POSTs to the local dev server (not just read the code): a call to a
+mapped test facility's number correctly landed in `calls`/`conversation_transcripts` against that
+facility; a call to a deliberately unmapped number correctly errored and wrote nothing to either
+table, confirmed by querying both directly afterward. Test facility and its rows cleaned up after.
+No dedicated Vitest test written for this — matches this codebase's existing convention (`logCall`,
+`getCurrentFacility`, `logTelephonyEvent` are similarly untested at the unit level, verified
+against real databases instead, since there's no Supabase mocking pattern established here).
+
+**Bonus finding while implementing this:** `setup-vapi-assistant.mjs` generated a brand-new random
+`VAPI_WEBHOOK_SECRET` on every run, but Vercel only ever stores one value for it — running the
+script for a second facility would have produced an assistant whose webhook calls the deployed
+app would reject with a 403, since the secret it sent wouldn't match. Fixed by reusing the
+existing secret from `.env.production.local` when present, only generating (and prompting to set)
+a new one on a true first-ever setup. Also parameterized the script's previously-hardcoded
+`--facility-name`/`--number` (was `'StorageAI Founder Pilot'`, a stale pre-rebrand name that also
+only ever worked for one specific facility) and corrected its final printed instructions, which
+previously told the operator to save `VAPI_ASSISTANT_ID` as a Vercel env var — that doesn't scale
+past one facility and is now stale given the new database columns.
+
+### Task 2 — Provisioning checklist
+
+`docs/operations/FOUNDER_PROVISIONING_CHECKLIST.md` — a real, runnable walkthrough using a
+worked "Joe's Self Storage" example: database creation, Twilio number purchase, Vapi assistant
+setup (with the new facility-name/number arguments), recording the mapping in the database, and
+a mandatory real-test-call verification step with an explicit rollback/cleanup section.
+
+### Task 5 — Provisioning time
+
+Measured the database step for real (timed actual insert operations against local Supabase, not
+just estimated) at effectively negligible query time, with the honest human-time figure closer to
+~2 minutes including reading output and verifying. Deliberately did *not* purchase a second real
+Twilio number just to produce a timing figure for the Twilio/Vapi steps — that's a real recurring
+cost and Steve's call, not something to spend speculatively. Those steps are clearly labeled as
+estimates in the report, not measurements, with a note that the real next data point is timing an
+actual second onboarding when one happens. Full breakdown in
+`FOUNDER_PROVISIONING_CHECKLIST.md`'s "Provisioning time report" section.
+
+### Task 6 — Self-service roadmap
+
+`docs/architecture/SELF_SERVICE_ROADMAP.md` — seven candidate automations ranked roughly by when
+they'd start paying off, each with a real trigger condition (volume, a repeated real mistake, or
+explicit operator demand) rather than a timeline. Explicitly states none of it should be built
+without one of those signals.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46), and both new/modified `.mjs` scripts'
+syntax all clean. Routing behavior verified against real webhook POSTs as described above, not
+just unit-level. `docs/operations/TECH_DEBT_REGISTER.md`'s single-tenant telephony item struck
+through as Fixed Phase 41.
+
+### Outcome
+
+The phase brief's own premise held up under real investigation: the architecture was already
+sound, and the actual gap was one hardcoded constant plus two missing database columns, not a
+broader refactor. A second facility can now be onboarded following
+`FOUNDER_PROVISIONING_CHECKLIST.md` without touching application code — not yet exercised against
+a real second facility, since that requires this migration to reach production first (a
+commit/push, awaiting Steve's go-ahead per the standing workflow) and a real decision to spend
+money on a second Twilio number. Not yet committed.

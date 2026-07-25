@@ -11,5 +11,7 @@ export interface Facility {
 	phone: string | null;
 	contact_name: string | null;
 	contact_email: string | null;
+	twilio_phone_number: string | null;
+	vapi_assistant_id: string | null;
 	created_at: string;
 }
