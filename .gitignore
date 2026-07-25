@@ -30,6 +30,7 @@ yarn-error.log*
 # supabase local CLI state
 supabase/.branches/
 supabase/.temp/
+supabase/snippets/
 
 # local-only Claude Code settings
 .claude/settings.local.json

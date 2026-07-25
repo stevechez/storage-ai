@@ -63,13 +63,30 @@ To test against a **real Twilio call** while developing locally, you'd need a tu
 
 ## 5. Production deployment
 
-Status as of this phase:
+Status: **done and verified end-to-end.**
 
-- [x] Code deployed (`/api/twilio/voice` live at `https://storage-ai-sigma.vercel.app/api/twilio/voice`, confirmed via `curl` — an unsigned request correctly returns `403`)
+- [x] Code deployed (`/api/twilio/voice` live at `https://storage-ai-sigma.vercel.app/api/twilio/voice`)
 - [x] Twilio webhook URL configured (see above)
-- [ ] **Vercel environment variables — not yet done.** Add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` to the Vercel project's **Settings → Environment Variables** — the same place the Supabase production credentials already live (`turbo.json` only declares variable *names*, never values; see `docs/operations/BACKUP_RECOVERY.md`). Confirmed still missing: a webhook request signed with the real `TWILIO_AUTH_TOKEN` (computed via `twilio.getExpectedTwilioSignature()`, not guessed) still got `403` from production — the only way that happens is if the deployed app doesn't have a matching `TWILIO_AUTH_TOKEN` to check against
-- [ ] After adding the env vars, trigger a new deployment (env var changes don't apply to an already-running deployment) — an empty commit or the Vercel dashboard's "Redeploy" both work
-- [ ] Call the number for real. Confirm: the greeting plays, and a row appears in `telephony_events` in the production database (Supabase Studio, production project)
+- [x] Vercel environment variables set (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` — Production + Preview)
+- [x] Production database has `telephony_events` (see "Production schema drift" below — this was the actual blocker, not the webhook config)
+- [x] Verified with a genuinely signed test request (`twilio.getExpectedTwilioSignature()` against the real Auth Token, not a guess): `200`, correct TwiML, and the row landed in `telephony_events` — confirmed by querying it directly, not inferred from the response
+
+## Production schema drift (found and fixed while verifying this phase)
+
+While debugging why a correctly-signed webhook request still failed, discovered that **production's schema had been frozen since roughly Phase 27/28** — every migration from `20260724164308_add_facility_contact_fields.sql` onward had only ever been applied to the local Docker database, never to the real hosted Supabase project. This wasn't a Twilio-specific problem; it was a systemic gap in how migrations get from `supabase/migrations/` to production (there's no CI/CD pipeline that does this automatically — see `docs/operations/BACKUP_RECOVERY.md` — every migration has always required someone to run it against production by hand, and that had stopped happening several phases ago without anyone noticing, because nothing had exercised production's schema directly until this phase).
+
+**The most consequential part of this, unrelated to Twilio:** `facilities.phone`, `.contact_name`, `.contact_email` didn't exist in production — meaning `scripts/onboard-facility.mjs` would have failed on a real signup, silently invalidating every "founder onboarding is ready" claim made since Phase 28. Nobody had actually run the script against production to find this out.
+
+Confirmed via direct schema queries (`information_schema.tables`, `information_schema.columns`, `pg_indexes`, `pg_constraint` — screenshotted from the cloud SQL editor, not assumed) that production was missing all of:
+- `facilities.phone` / `.contact_name` / `.contact_email` (Phase 28)
+- `calls_facility_id_created_at_idx` (Phase 34)
+- `early_access_signups_email_key` unique constraint (Phase 37)
+- The `leads`/`units`/`conversations` drop (Phase 37) — all three were still present in production
+- `telephony_events` (Phase 38, this phase)
+
+Fixed by running all five migrations' SQL directly against production, in dependency order, after confirming `leads`/`units`/`conversations` were empty there too (so dropping them was safe). Re-verified afterward: the same schema queries now show everything present, and a real signed Twilio webhook request now genuinely writes to `telephony_events` in production — confirmed by querying the table directly for the specific test `CallSid`, not by response status alone.
+
+**This Claude does not have standing credentials to run SQL against production directly** (no `.env.production.local` exists by design, and this session's Supabase MCP connection is tied to an unrelated account) — every fix above required Steve to run the SQL himself in the cloud SQL editor. If this kind of drift matters going forward, the real fix is a migration deployment step (Supabase's GitHub integration, or a CI step), not a periodic manual audit — not built this phase, since that's infrastructure work beyond "prove the plumbing," but worth naming as the actual root cause rather than something to just re-catch next time by luck.
 
 ## Why no `facility_id`
 
@@ -87,7 +104,7 @@ const signature = twilio.getExpectedTwilioSignature(authToken, url, params); // 
 - If a request signed with the **real** Auth Token still gets `403`: the deployed app doesn't have a matching `TWILIO_AUTH_TOKEN` — check Vercel's environment variables are actually set (this exact scenario happened during Phase 38's production rollout: webhook configured correctly, code deployed correctly, but Vercel env vars weren't set yet, so every signature check failed closed).
 - If it succeeds: the problem is upstream — the URL configured in Twilio's console doesn't exactly match the deployed URL (trailing slash, protocol, wrong path), so Twilio itself is signing against a different string than the app expects.
 
-**Call connects but nothing appears in `telephony_events`.** The endpoint always answers the call first and logs second — a caller hearing the greeting doesn't guarantee the log write succeeded (deliberate: a DB hiccup shouldn't mean a caller hears dead air). Check Vercel's Function Logs for `Failed to log telephony event` — the error object printed there (Postgres error code + message) is the same shape used everywhere else in this app's logging (see `docs/operations/BACKUP_RECOVERY.md` on where those logs live and how long they're retained).
+**Call connects but nothing appears in `telephony_events`.** The endpoint always answers the call first and logs second — a caller hearing the greeting doesn't guarantee the log write succeeded (deliberate: a DB hiccup shouldn't mean a caller hears dead air). Check Vercel's Function Logs for `Failed to log telephony event` — the error object printed there (Postgres error code + message) is the same shape used everywhere else in this app's logging (see `docs/operations/BACKUP_RECOVERY.md` on where those logs live and how long they're retained). If the error is `PGRST205: Could not find the table ... in the schema cache`, that's not actually a cache problem most of the time — check whether the table genuinely exists in **production** (not local) first; this happened during Phase 38's own rollout and the real cause was that the table had never been created in production at all (see "Production schema drift" above), not a stale cache.
 
 **Local `curl` test returns `403`.** Shouldn't happen — signature validation only runs when `NODE_ENV === 'production'`, and `next dev` never sets that. If it does happen, something's setting `NODE_ENV=production` locally; check your shell environment before assuming the code is broken.
 
