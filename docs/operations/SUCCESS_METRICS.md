@@ -4,7 +4,7 @@ Defined before any pilot customer exists, per Phase 29 Task 3 — deliberately j
 
 | Metric | Where it already lives |
 |---|---|
-| Calls processed | `getMorningReport()`'s `totalCalls` (`lib/storage/report.ts`) — every call ever received for the facility |
+| Calls processed | `getFollowUps(facilityId).length` (`lib/storage/follow-up.ts`) — every call ever received for the facility |
 | Calls requiring follow-up | `getTodaysActions(followUps).length` (`lib/storage/actions.ts`) — currently unresolved (`new`/`contacted`) opportunities |
 | Follow-ups completed | Not a single existing field — derive as `summarizeOutcomes(followUps).converted + summarizeOutcomes(followUps).lost` (`lib/storage/outcomes.ts`): calls that reached a resolution, either way |
 | Opportunities identified | `estimateRevenueImpact(followUps).identifiedCount` (`lib/storage/revenue.ts`) — converted + pending, deliberately excludes lost opportunities |

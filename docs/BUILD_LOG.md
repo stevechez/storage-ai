@@ -866,3 +866,85 @@ Every real failure path logs via `console.error` with a consistent, human-readab
 ### Outcome
 
 The workflows that matter most were already more resilient than assumed — onboarding already had a self-recovery hint built in, AI analysis structurally can't leave inconsistent records, and error logging was already accurate and clean. The one real silent-failure gap found (stale-ID status updates) is fixed and verified. Everything else is now written down instead of living in one person's memory — including the uncomfortable but true fact that the production onboarding credentials file doesn't currently exist.
+
+## Phase 36 — Product Consistency & Final Engineering Audit
+
+Date: 2026-07-24/25
+
+### Goal
+
+Not a feature, refactor, or performance phase — does StorageAI feel like one deliberately-built product, or a collection of features accumulated over 35 phases? Audited terminology, design system consistency, documentation cross-references, and simulated a founder returning after six months with only the repository to go on.
+
+### Completed — Task 1 & 2: end-to-end + naming consistency audit
+
+Walked the real journey (landing → application → onboarding → dashboard → call logging → AI recommendations → operator actions) checking terminology at every step, via direct code/copy inspection, not assumption. Found and fixed one real, concrete vocabulary inconsistency: `detectRecommendedAction()`'s fallback branch returned `'Follow up with renter'` — the only place in the entire dashboard app that said "renter" instead of "customer" (used everywhere else: "Customer Need," "Call customer immediately," the Log a Call placeholder). Fixed via TDD (new test in `intelligence.test.ts` asserting the general-intent fallback, watched it fail, then changed the string to `'Follow up with customer'`).
+
+Checked and judged as *not* real inconsistencies (documented, not changed): marketing copy's "renter" vs. the dashboard app's "customer" — a defensible narrative split (marketing describes the operator's renters in third person; the product, once in use, calls them the operator's customer), not a case of one concept accidentally getting two names. "Locations" used once alongside "facilities" in pricing copy — natural prose variation in two adjacent sentences, not competing vocabulary.
+
+### Completed — Task 3: design system consistency
+
+Found and fixed two real inconsistencies:
+1. **`app/dashboard/error.tsx` used the marketing site's design tokens** (`font-display`, `bg-concrete`, `text-steel`, `bg-signal`, `rounded-full`) instead of the dashboard's own established plain gray/black system used by every other dashboard screen — almost certainly built by copying `app/error.tsx` (the correct place for marketing tokens, since it's the global boundary covering marketing pages too) without adapting it to the dashboard-only scope. Rewrote to match the dashboard's actual button/text conventions (`rounded-md bg-black`, `text-gray-500`, no custom font) — same copy, same behavior, now visually consistent with the rest of the product.
+2. **`OpportunityStatusBadge` mixed emoji and plain text** — `'Converted ✅'` / `'Lost ❌'` had emoji, `'Contacted'` / `'Needs Follow-Up'` didn't, the only icon-like elements anywhere in the app (confirmed via search: zero `<svg>`, zero icon library usage anywhere else). Removed the emoji rather than adding two more, since color already distinguishes every status and plain text is the established convention everywhere else.
+
+Also found the dashboard's "Revenue Impact" section was the only one of five missing the `<h2>` section-heading pattern every other section uses. Added it — then found that doing so created literal duplicate text (the card's own internal "Revenue Impact" label sitting directly under the new identical heading, unlike every other section where the h2 and the card's internal label say different things). Removed the now-redundant internal label from `RevenueImpactCard` rather than leave the duplication, restoring the same "h2 names the section, card names its specific content" pattern used everywhere else. Confirmed the button hierarchy (primary: black fill; secondary: bordered, no fill) and input styling are already fully consistent across every dashboard form — no changes needed there.
+
+### Completed — Task 4: documentation cross-reference review
+
+Found and fixed a genuinely stale reference: `docs/operations/SUCCESS_METRICS.md` still cited `getMorningReport()`'s `totalCalls` — a function removed entirely in Phase 34. This should have been caught and fixed during that phase's own cleanup and wasn't; Phase 36's cross-reference pass is what caught it. Updated to `getFollowUps(facilityId).length`, which is what actually replaced it. Cross-checked every currently-exported `lib/storage/` function name against every doc reference to it — no other dangling references found (the other historical `getMorningReport()` mentions, in `BUILD_LOG.md` and `PERFORMANCE_BASELINE.md`, are correctly past-tense narrative explaining what was removed and why, not live documentation). Also fixed `TECH_DEBT_REGISTER.md`'s intro line, which claimed everything in the register was verified "during the Phase 24B reliability audit" — no longer true now that entries span Phase 24B through 35, each with its own phase/date already cited per-entry.
+
+### Completed — Task 5: "founder from scratch" simulation
+
+This surfaced the most consequential finding of the phase. Root `CLAUDE.md` — read automatically at the start of every session, per its own instruction to read it "before modifying code" — still said **"Current sprint: Sprint 14 — First Customer Trust,"** 22 phases out of date. `docs/CLAUDE.md` said **"Current Phase: Prototype development"** with a 5-item "Completed" list, despite the product having since shipped a full marketing site with pricing, AI call analysis, revenue tracking, response drafting, and an entire `docs/operations/` documentation suite. A future Steve — or this Claude, next session — reading either file first would form a badly wrong picture of where the product actually stands.
+
+Fixed both, and deliberately did **not** replace the stale claim with a new hardcoded phase number (which would just go stale again the same way) — instead pointed both at `docs/BUILD_LOG.md`'s most recent entry as the durable source of truth, with a note explaining why that pointer exists rather than a static summary.
+
+Also found `README.md` — the first thing anyone outside this Claude session would read, including on GitHub — was even more stale: it still said "🚧 Prototype Development," and contained an entire **embedded, duplicated copy of an old Sprint 1–3-era `CLAUDE.md`** describing an architecture (an autonomous "AI Voice Agent" that answers calls, verifies identity, and processes payment end-to-end) that directly contradicts the current, explicit product positioning in the real `CLAUDE.md` ("NOT: AI chatbot, generic AI agent, voice automation platform"). Rewrote `README.md` entirely: accurate current description, no hardcoded status, points to `BUILD_LOG.md` and `docs/operations/` rather than duplicating them, verified every command in its "Development" section actually works.
+
+**That verification caught one more real bug:** `pnpm test` had never actually worked from the repo root — root `package.json` had no `test` script and `turbo.json` had no `test` task, so the command silently did nothing (`exit 0`, no output). This exact broken command was already being told to founders in *three existing docs* (`LAUNCH_CHECKLIST.md`, `FOUNDER_OPERATIONS.md`, and `BACKUP_RECOVERY.md`, the last two written this same week in Phase 35 — including by this Claude, without verifying the command actually worked). Fixed by adding `"test": "turbo test"` to root `package.json` and a `"test": {}` task to `turbo.json`. That surfaced a second, smaller bug: `packages/database` (confirmed vestigial — Supabase CLI scaffolding only, no real code, `apps/web` has no workspace dependency on it) had npm's default placeholder `"test": "echo \"Error: no test specified\" && exit 1"` script, which would have made the repo-root `pnpm test` fail even with real tests passing. Removed the placeholder script; `turbo test` now correctly skips `database` (no script defined) and runs `web`'s real suite. Verified: `pnpm test` from the repo root now genuinely runs and reports 34/34 passing, confirmed by direct execution, not assumption.
+
+### Verification
+
+`pnpm exec tsc --noEmit`, `pnpm exec eslint .`, and the full Vitest suite (34/34, up from 33 — the new naming-consistency test) all pass, both directly in `apps/web` and via the now-working root `pnpm test`. `pnpm build` and `pnpm lint` reconfirmed unaffected by the `turbo.json`/root `package.json` changes. Confirmed live against the dev server: all four routes (`/`, `/dashboard`, `/facilities`, `/leads`) return `200`, all five dashboard section headings render including the new "Revenue Impact" one, no emoji remain in status badges, and "Follow up with customer" renders where "Follow up with renter" used to.
+
+### Outcome
+
+Every fix this phase was small — a handful of Tailwind classes, two words, a couple of missing package.json lines — but each one closes a gap between what the product claims about itself and what's actually true, which is exactly what a consistency phase is for. The most valuable finding wasn't in the application code at all: the files a future session reads *first* were badly out of date, in a way that would have actively misled whoever — human or AI — picked this project back up next. Those are fixed now, and fixed durably (pointing at `BUILD_LOG.md` rather than a number that will drift again) rather than just patched for today.
+
+## Phase 37 — Technical Debt Resolution & Codebase Stabilization
+
+Date: 2026-07-25
+
+### Goal
+
+Not a feature or architecture phase — resolve the highest-value items already sitting in `TECH_DEBT_REGISTER.md`, working only from that register, `BUILD_LOG.md`, and prior audits. Nothing invented.
+
+### Completed — Task 1 & 2: highest-priority debt + database health
+
+- **Added `app/dashboard/loading.tsx`** — the register's own highest-priority open item (Medium, the ceiling of anything in there). A plain skeleton using the dashboard's existing gray/black system, no new design tokens.
+- **Added a unique constraint on `early_access_signups.email`** (`supabase/migrations/20260725120000_...sql`). The register had flagged this needed a conflict-behavior decision, not just a migration — implemented both together: `submitEarlyAccessSignup` now catches the specific unique-violation code (`23505`) and still returns the normal success message, so a resubmit reads the same as it always did instead of a new, confusing generic error. Verified against the real local database (first submit succeeds, duplicate submit still shows success, direct `psql` confirms the constraint itself rejects the duplicate row) before cleaning up the test rows.
+- **Dropped `leads`, `units`, `conversations`** (`supabase/migrations/20260725120100_...sql`) — confirmed zero rows and zero code references immediately before dropping, `conversations` first since it held the only foreign key into `leads`. Its two RLS policies, the only explicit policies anywhere in the schema, went with it.
+
+### Completed — Task 3: code cleanup
+
+- **Deleted `app/leads/` and `app/facilities/`** — unlinked, pre-`calls`-model placeholder pages flagged across three separate phases (30, 33, 36) without a delete-or-wire-up decision ever being made. Made the call: deleted. Reconfirmed zero references first; verified live both now `404` cleanly and nothing else broke.
+- **Deleted `packages/database`** — confirmed vestigial (Supabase CLI scaffolding only, no real code) since Phase 33/36, deletion explicitly deferred as "a bigger decision than a labeling-only phase should make." Verified before deleting: no application import references it, `pnpm-workspace.yaml` only glob-matches it (nothing named explicitly), and the `supabase` CLI it declared as a dependency has always actually run as a global Homebrew install throughout this entire project, never through this package. `pnpm install` after deletion cleanly dropped it from the lockfile; `pnpm test`/`lint`/`build` all still pass from the repo root.
+- **Removed a provably-dead condition in `detectRecommendedAction()`** (`lib/storage/intelligence.ts`) — found while adding test coverage for Task 4 (see below), not a pre-existing register item, so found and fixed in the same breath rather than logged first. `if (intent === 'availability' || mentionsAvailability)` had a redundant second clause: since `detectIntent()` checks the identical `AVAILABILITY_KEYWORDS` regex with higher priority than every branch that could reach this line, `mentionsAvailability` can only be `true` at this point if `intent` is already `'availability'` — traced through every code path to confirm this isn't a guess. Simplified to `if (intent === 'availability')`. Verified behavior-preserving by adding tests for this exact branch *before* simplifying (they passed against the old code first) and confirming they still passed after.
+
+### Completed — Task 4: test coverage
+
+`detectRecommendedAction()` — the function that produces literally the most action-driving text in the product (what an operator is told to do about a call) — had 3 of its 5 branches completely untested (rental-only, pricing-only, availability-only; only the rental+pricing combo and the general fallback had coverage). Added targeted tests for all three, which also served as the safety net for the Task 3 dead-code removal above. Did not pursue broader coverage — every other pure function module in `lib/storage/` already has dedicated tests; this was the one real, specific gap, not a general coverage push.
+
+### Completed — Task 5: technical debt review
+
+Rewrote `TECH_DEBT_REGISTER.md`'s open items into the four requested buckets (Must resolve before first founder customer / Can wait / Future scalability / Nice-to-have), preserving every entry's original Risk/User Impact/Estimated Effort/Priority fields rather than replacing them with looser prose. One real, stated conclusion: **nothing in the register is customer-blocking** — every item that actually was got fixed the phase it was found, across 37 phases, which is itself a signal the discipline behind this register has been working.
+
+One new item surfaced while gathering evidence for the `leads`/`units`/`conversations` drop and documented rather than acted on in the same breath (per this phase's own "nothing should be invented" rule): the `profiles` table — zero rows, zero code references, `auth.users`-linked scaffolding for a login system never built, the same pattern as the already-known anon-key clients. Logged as Nice-to-have, not touched.
+
+### Verification
+
+`pnpm exec tsc --noEmit`, `pnpm exec eslint .`, and the full Vitest suite (37/37, up from 34 — three new branch-coverage tests) all pass, both directly in `apps/web` and via the repo-root `pnpm test`/`pnpm lint`/`pnpm build` (all three re-run clean after the `packages/database` deletion). Both migrations applied and verified against the real local database, with all test data cleaned up afterward. Confirmed live: `/`, `/dashboard` still `200`; `/leads`, `/facilities` now correctly `404`.
+
+### Outcome
+
+Six real, register-sourced items resolved (one more than planned — the `mentionsAvailability` dead code was a bonus catch from writing the Task 4 tests), all verified rather than assumed, all with zero change to customer-visible behavior except a strictly better one (a duplicate signup no longer looks like an error). What's left in the register is now honestly and specifically prioritized instead of just accumulated — and the headline finding of the whole phase is a reassuring one: there was no hidden customer-blocking debt to find.

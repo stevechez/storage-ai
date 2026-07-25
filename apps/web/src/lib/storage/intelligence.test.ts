@@ -15,6 +15,41 @@ describe('analyzeTranscript', () => {
 			recommendedAction: 'Send pricing and availability',
 		});
 	});
+
+	it('recommends following up with the customer when no specific intent is detected', () => {
+		const transcript = 'Hi, just calling to check in.';
+
+		const result = analyzeTranscript(transcript);
+
+		expect(result.recommendedAction).toBe('Follow up with customer');
+	});
+
+	it('recommends sending an availability link for a rental request with no pricing question', () => {
+		const transcript = 'Customer wants a unit for their move next month.';
+
+		const result = analyzeTranscript(transcript);
+
+		expect(result.intent).toBe('rental');
+		expect(result.recommendedAction).toBe('Send availability link');
+	});
+
+	it('recommends sending pricing information for a pricing-only question', () => {
+		const transcript = 'How much does it cost per month?';
+
+		const result = analyzeTranscript(transcript);
+
+		expect(result.intent).toBe('pricing');
+		expect(result.recommendedAction).toBe('Send pricing information');
+	});
+
+	it('recommends sending availability information for an availability-only question', () => {
+		const transcript = 'Is anything available right now?';
+
+		const result = analyzeTranscript(transcript);
+
+		expect(result.intent).toBe('availability');
+		expect(result.recommendedAction).toBe('Send availability information');
+	});
 });
 
 describe('describePriorityReason', () => {

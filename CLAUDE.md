@@ -34,13 +34,9 @@ Engineering rules:
 4. Do not introduce dependencies without justification.
 5. Update documentation after meaningful milestones.
 
-Current sprint:
+Current phase:
 
-Sprint 14 — First Customer Trust
-
-Goal:
-
-Increase customer confidence and credibility of the existing experience — refinement, not new capabilities. See docs/BUILD_LOG.md for the full sprint history.
+See the most recent `##` entry in `docs/BUILD_LOG.md` for the current phase, its goal, and full sprint/phase history — don't trust a phase number hardcoded here, it will drift the moment the next phase starts. (This file previously said "Sprint 14" long after the project had moved past Phase 30+; that staleness is exactly what this note exists to prevent from happening again.)
 
 Do not implement future integrations yet:
 

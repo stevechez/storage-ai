@@ -85,6 +85,8 @@ export default async function DashboardPage({
 			</section>
 
 			<section>
+				<h2 className="text-2xl font-semibold mb-4">Revenue Impact</h2>
+
 				<RevenueImpactCard impact={estimateRevenueImpact(followUps)} />
 			</section>
 		</main>

@@ -1,257 +1,51 @@
 # StorageAI
 
-AI-powered virtual leasing manager for independent self-storage facilities.
+A digital leasing manager for independent self-storage facilities — it captures rental opportunities from missed and after-hours calls, prioritizes them, and helps the operator convert them. It is **not** an AI chatbot, a generic AI agent, or a voice automation platform (see `CLAUDE.md` for the full product positioning) — today, calls are logged (manually, or via a simple ingestion API) and analyzed; nothing is answered or automated end-to-end.
 
-## Mission
+## Current status
 
-StorageAI helps self-storage operators capture missed rental opportunities by automating the after-hours leasing process.
+Don't trust a status line in this file — it will go stale the same way an earlier version of this README did. The current phase, and the full history of what's been built and why, lives in [`docs/BUILD_LOG.md`](docs/BUILD_LOG.md). As a rough orientation: the product has a marketing site with pricing, a working operator dashboard, rule-based call analysis, revenue-impact tracking, response drafting, manual call logging, and per-facility dashboards — plus a full operations documentation suite in `docs/operations/` (onboarding, launch checklist, performance baseline, backup/recovery, founder operations playbook).
 
-Instead of paying a front desk employee to answer repetitive questions, verify customers, and process basic rentals, StorageAI provides an AI leasing assistant available 24/7.
+## Where to start
 
----
+- [`CLAUDE.md`](CLAUDE.md) — product positioning and engineering rules (read this first)
+- [`docs/CLAUDE.md`](docs/CLAUDE.md) — technical context (schema, coding rules)
+- [`CLAUDE_HANDOFF_EVEREST.md`](CLAUDE_HANDOFF_EVEREST.md) — the original product mission/vision doc
+- [`docs/BUILD_LOG.md`](docs/BUILD_LOG.md) — the single authoritative history of every engineering decision, dated and in order
+- [`docs/operations/`](docs/operations/) — onboarding, launch checklist, performance baseline, backup & recovery, founder operations playbook, tech debt register, pilot log, success metrics
 
-# Current Status
+## Technology stack
 
-🚧 Prototype Development
+- Next.js App Router, TypeScript, Tailwind CSS
+- Supabase (Postgres)
+- pnpm (Turborepo monorepo — `apps/web`, `packages/database`)
 
-Current capabilities:
+## Development
 
-- Next.js application foundation
-- Supabase database
-- Multi-tenant data model
-- Call ingestion API
-- Operator dashboard
-- Call activity reporting
-
----
-
-# Product Vision
-
-A customer calls a storage facility.
-
-StorageAI:
-
-1. Answers the phone
-2. Understands the customer's needs
-3. Checks available units
-4. Sends a rental link
-5. Verifies identity
-6. Processes payment
-7. Creates tenant access
-
----
-
-# Architecture
-
-Customer Phone Call
-
-    |
-    v
-
-AI Voice Agent
-
-    |
-    v
-
-StorageAI Platform
-
-    |
-    +---- Storage PMS
-    |
-    +---- Twilio SMS
-    |
-    +---- Stripe
-    |
-    +---- Supabase
-
----
-
-# Technology Stack
-
-## Application
-
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-
-## Database
-
-- Supabase PostgreSQL
-
-## Package Management
-
-- pnpm
-
----
-
-# Development
-
-Install:
-
-````bash
+```bash
 pnpm install
+supabase start          # local Supabase (Docker)
+pnpm dev                 # apps/web on localhost:3000
+```
 
-Run:
+Reset the local database from migrations:
+```bash
+supabase db reset --local
+```
 
-pnpm dev
-
-Start Supabase:
-
-supabase start
-
-Reset database:
-
-supabase db reset
-Testing
-
-Test call ingestion:
-
+Smoke-test call ingestion against a running dev server:
+```bash
 node scripts/test-call.js
-
-Expected:
-
-{
-  "success": true
-}
-Project Philosophy
-
-StorageAI follows a simple rule:
-
-Every feature should directly help a storage operator capture more rentals or reduce operating costs.
-
-Avoid unnecessary complexity.
-
-Build customer value first.
-
-
----
-
-# CLAUDE.md
-
-This one is the important one.
-
-```markdown
-# StorageAI Claude Context
-
-
-## Project Overview
-
-StorageAI is an AI-powered virtual leasing manager for independent self-storage facilities.
-
-The product replaces repetitive front-desk leasing tasks by answering calls, handling renter questions, and guiding customers through rental completion.
-
-
-## Current Development Phase
-
-Prototype / MVP foundation.
-
-
-## Completed Features
-
-### Sprint 1
-- Next.js application created
-- Supabase configured
-- Project structure established
-
-
-### Sprint 2
-- Database schema created
-- Facility model created
-- Call ingestion API created
-- Calls stored successfully
-
-
-### Sprint 3
-- Operator dashboard created
-- Live call activity displayed
-
-
-## Current Database
-
-Tables:
-
-organizations
-
-Represents StorageAI customers.
-
-
-facilities
-
-Represents storage locations.
-
-
-calls
-
-Represents inbound customer interactions.
-
-
-## Demo Facility
-
-UUID:
-
-11111111-1111-1111-1111-111111111111
-
-
-## Technology Rules
-
-Use:
-
-- Next.js App Router
-- TypeScript
-- pnpm
-- Supabase
-- Tailwind CSS
-
-
-## Architecture Rules
-
-1. Keep business logic separated from UI.
-
-2. Database is the source of truth.
-
-3. External integrations should use service abstractions.
-
-4. Avoid premature abstraction.
-
-5. Prefer working vertical slices over large frameworks.
-
-
-## Product Priority
-
-Optimize for:
-
-- clear customer value
-- demo capability
-- simple sales story
-
-
-Do not prioritize:
-
-- unnecessary dashboards
-- complex permissions
-- advanced infrastructure
-- premature scaling
-
-
-## Current Goal
-
-Build the first complete StorageAI customer workflow:
-
-Inbound call
-→ AI response
-→ renter qualification
-→ availability lookup
-→ lease checkout
-→ completed rental
-
-
-## Development Style
-
-Make small changes.
-
-Test immediately.
-
-Commit working milestones.
-
-Document important decisions.
-````
+# Expected: { "success": true, ... }
+```
+
+Run checks:
+```bash
+pnpm exec tsc --noEmit
+pnpm exec eslint .
+pnpm test
+```
+
+## Project philosophy
+
+Every feature should directly help a storage operator capture more rentals or reduce missed-call losses. Avoid unnecessary complexity; build customer value first. See `CLAUDE.md` for the full engineering rules this project follows.

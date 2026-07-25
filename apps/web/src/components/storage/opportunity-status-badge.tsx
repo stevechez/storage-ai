@@ -3,8 +3,8 @@ import type { OpportunityStatus } from '@/types/leasing';
 const STATUS_LABEL: Record<OpportunityStatus, string> = {
 	new: 'Needs Follow-Up',
 	contacted: 'Contacted',
-	converted: 'Converted ✅',
-	lost: 'Lost ❌',
+	converted: 'Converted',
+	lost: 'Lost',
 };
 
 const STATUS_COLOR: Record<OpportunityStatus, string> = {

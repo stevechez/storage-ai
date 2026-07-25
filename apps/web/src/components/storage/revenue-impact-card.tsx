@@ -5,8 +5,6 @@ import { Card } from './card';
 export function RevenueImpactCard({ impact }: { impact: RevenueImpact }) {
 	return (
 		<Card>
-			<div className="text-sm text-gray-500 mb-2">Revenue Impact</div>
-
 			<div className="text-3xl font-bold">{formatEstimatedRevenue(impact.estimatedMonthlyRevenue)}</div>
 			<div className="text-sm text-gray-500 mb-4">Estimated Monthly Revenue</div>
 

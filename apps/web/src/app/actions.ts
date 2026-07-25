@@ -29,7 +29,7 @@ export async function submitEarlyAccessSignup(
 		message: typeof message === 'string' && message.trim() !== '' ? message.trim() : null,
 	});
 
-	if (error) {
+	if (error && error.code !== '23505') {
 		console.error('Failed to save early access signup', error);
 		return { status: 'error', message: 'Something went wrong. Please try again.' };
 	}

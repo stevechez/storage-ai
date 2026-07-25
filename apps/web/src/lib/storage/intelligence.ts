@@ -35,13 +35,12 @@ function detectPriority(timeline: string | undefined): OpportunityPriority {
 
 function detectRecommendedAction(intent: OpportunityIntent, transcript: string): string {
 	const mentionsPricing = PRICING_KEYWORDS.test(transcript);
-	const mentionsAvailability = AVAILABILITY_KEYWORDS.test(transcript);
 
 	if (intent === 'rental' && mentionsPricing) return 'Send pricing and availability';
 	if (intent === 'rental') return 'Send availability link';
 	if (intent === 'pricing') return 'Send pricing information';
-	if (intent === 'availability' || mentionsAvailability) return 'Send availability information';
-	return 'Follow up with renter';
+	if (intent === 'availability') return 'Send availability information';
+	return 'Follow up with customer';
 }
 
 export function describePriorityReason(opportunity: LeasingOpportunity): string {
