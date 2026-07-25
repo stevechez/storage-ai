@@ -561,3 +561,100 @@ While verifying the API fix with a real POST, the test row didn't appear in the 
 ### Outcome
 
 The four most trust-relevant reliability gaps are fixed and verified against real requests, not just typechecked. Medium/Low items are logged for later. Local development environment now actually points at local infrastructure.
+
+## Phase 26 Workstream 1 — Signup-to-First-Value Audit
+
+Date: 2026-07-24
+
+### Goal
+
+Audit the current signup flow, identify every gap between a real signup and a real customer getting value, and produce a manual onboarding runbook plus a concrete implementation task list. No code changed this pass — findings and tasks only, per explicit instruction.
+
+### Central finding
+
+The Early Access form and the rest of the product are fully disconnected. Verified directly: `submitEarlyAccessSignup()` only inserts into `early_access_signups` — nothing notifies the founder, and nothing connects that table to `facilities`. More significantly, `/dashboard` is a single static route hardcoded to one constant (`DEMO_FACILITY_ID`), with zero per-facility parameterization anywhere in the app, and there is no authentication anywhere in the codebase (confirmed via full-codebase search — `profiles` table exists in the schema but no code references Supabase Auth). Most significantly: there is no path for a real customer's real phone calls to enter the system at all — the only ingestion path is a direct API POST, with no telephony integration (by design) and no manual-entry UI either.
+
+**Plainly: if someone paid for the Founder Pilot today, there is currently no operational path to give them value with their own real data.** The product is a fully real, fully working demo of one fixed facility — not yet a multi-tenant product.
+
+### Delivered
+
+`docs/operations/ONBOARDING_RUNBOOK.md`:
+- Signup flow audit (what `submitEarlyAccessSignup` actually does, verified against the code)
+- A step-by-step gap table tracing signup → facility created → dashboard viewable → real calls ingested → login, marking each step Works/Gap
+- A manual runbook documenting exactly what's possible today (SQL to hand-create a facility, and why viewing its dashboard and getting real calls into it still aren't possible without code changes)
+- Four prioritized implementation tasks: (1) make `/dashboard` viewable per-facility via a query param, no auth needed yet; (2) a manual call-logging form reusing the existing ingestion endpoint — closes the biggest gap without touching the telephony boundary; (3) founder signup notification, recommending a manual periodic check over building notification infra at pilot scale; (4) scripting facility creation instead of hand-written SQL. Explicitly did not list authentication as a task — private unguessable links (Task 1) are a reasonable stand-in for a handful of founder-supported pilot customers
+
+### Outcome
+
+The actual blocker to "first customer success" isn't onboarding polish — it's that the product can't yet serve a second tenant with real data at all. That's now a concrete, ordered task list instead of an assumption.
+
+## Phase 26 Workstream 1 — Tasks 1 & 2 implemented
+
+Date: 2026-07-24
+
+### Goal
+
+Close the two biggest gaps from the audit above: the dashboard can't show a second facility, and there's no way for real call data to enter the system without telephony integration.
+
+### Completed
+
+- **Task 1 — per-facility dashboard.** `getCurrentFacility(facilityId?)` now accepts an optional ID (defaults to `DEMO_FACILITY_ID`); `/dashboard` reads it from a `?facility=` search param (Next.js's async `searchParams` prop, confirmed against this project's actual installed Next.js docs rather than assumed). No auth — a private link is a reasonable trust model for a handful of founder-supported pilots
+- **Task 2 — manual call logging.** New `lib/storage/calls.ts` (`logCall()`) extracted as the single shared insert path; `app/api/events/call/route.ts` refactored to use it instead of duplicating the logic; new `logCallAction` Server Action (`app/dashboard/actions.ts`) using the same `useActionState` pattern as the Early Access form; new `LogCallForm` client component, placed prominently at the top of the dashboard as the primary data-entry point, with copy that's honest about why it exists ("No phone system connected yet — until there is, log a call here...")
+
+### Verified live, end to end, not just compiled
+
+- `/dashboard` with no param, with the demo facility's real ID, and with a nonexistent ID — the last one correctly triggers `dashboard/error.tsx` (confirmed both error boundaries are correctly bundled as client chunks, so the friendly fallback will render in a real browser even though curl only shows the digest-only server shell for a client-rendered error boundary)
+- Logged a real test call through the actual insert path (confirmed it landed in the *local* database, not production) and confirmed on the rendered dashboard that it received full analysis — correct intent, unit size, timeline, priority, a generated response draft, and status-tracking buttons, identical treatment to every other call. Cleaned up all test artifacts afterward (local DB row, temp script, oversized tool-result files)
+
+### Outcome
+
+A real operator's real call can now get real value the same day, without waiting on telephony integration — logged by hand today, automated later. Tasks 3 and 4 (signup notification, scripted facility creation) remain open in the runbook.
+
+## Phase 28 — Tasks 2 & 5 only (Tasks 1, 3, 4 explicitly rejected)
+
+Date: 2026-07-24
+
+### Scope decision
+
+Phase 28 proposed five tasks. Pushed back on three before starting: Task 1 (signup notification) was already addressed in the Phase 26 runbook with a specific reason to defer it (zero real signups exist yet — nothing to notify about); Tasks 3 (Pilot Health Dashboard) and 4 (Founder Administration — pause/pricing/status) are new feature surfaces designed against zero real pilot facilities, the same premature-building pattern flagged in earlier phases. User agreed and explicitly removed 1, 3, and 4, keeping only Task 2 (facility creation workflow) and Task 5 (documentation).
+
+### Completed — Task 2: facility creation script
+
+- Migration `20260724164308_add_facility_contact_fields.sql`: added `phone`, `contact_name`, `contact_email` to `facilities`. Deliberately did not add any pricing-status or pause/active/pending field — that's the rejected Task 4
+- `apps/web/scripts/onboard-facility.mjs`: creates the organization + facility pair from CLI args, replacing hand-written SQL. Reads production credentials from a new `.env.production.local` file — deliberately **not** `.env.local`, since that file is what `next dev` auto-loads, and mixing production credentials into it is exactly what caused local dev to silently write to production earlier this session. Refuses to run if the configured URL points at `localhost`/`127.0.0.1`, as a hard safety check against that exact mistake recurring
+- Script placed at `apps/web/scripts/` rather than the existing root `scripts/` — `@supabase/supabase-js` only resolves from `apps/web/node_modules` under this repo's pnpm layout (confirmed by the first test run failing with `ERR_MODULE_NOT_FOUND` until relocated)
+
+### Verified, not just written
+
+- Both required-args and missing-file error paths produce the correct message
+- The localhost safety guard was tested directly: pointed a temporary `.env.production.local` at `127.0.0.1` and confirmed the script refuses to run rather than silently proceeding
+- The actual insert logic (organization + facility with all three new columns) was verified against the local database with a throwaway equivalent script, confirmed the row shape is correct, then cleaned up immediately — did not run the real script against production, since there's no real customer to onboard yet and doing so would create fake data in the live database
+
+### Completed — Task 5: documentation
+
+Rewrote `docs/operations/ONBOARDING_RUNBOOK.md` in place (not a new fragmented file) to add:
+- A founder onboarding checklist reflecting the now-working tools (the script, the per-facility dashboard link, the Log a Call form)
+- A pilot support section covering the three most likely "that doesn't look right" situations, tied to the actual mechanism (`analyzeTranscript()` is rule-based keyword matching with no external dependency, `buildResponseMessage()` is a static template) rather than generic troubleshooting advice
+- Recovery procedures for the three failure modes Phase 28 asked about — notably, clarified that "AI processing fails" isn't a real failure mode for this architecture at all (no external call to fail), redirecting that concern to what it actually means here: a rule-matching gap worth a code fix, not an outage to recover from
+
+### Outcome
+
+Facility onboarding is now a documented, scripted, safety-guarded five-minute task instead of remembered SQL — and the runbook now doubles as the actual support reference for the first real pilot, when one exists.
+
+## Phase 29 — Tasks 1, 3, 4, 5 (Task 2 rejected as redundant)
+
+Date: 2026-07-24
+
+### Scope decision
+
+Phase 29 proposed five documentation tasks. Flagged Task 2 (Product Decision Register) before starting: it would duplicate what `BUILD_LOG.md` already does — every entry here already records problem, evidence, decision, alternatives, and outcome, dated. User agreed to skip it and keep `BUILD_LOG.md` as the single authoritative history. Also flagged that Tasks 1 (Observation Log) and 4 (Retrospective Template) overlap — both are "what happened during a real pilot interaction," just different granularity — and combined them into one file rather than two near-identical ones.
+
+### Completed
+
+- `docs/operations/PILOT_LOG.md` (Tasks 1+4 combined) — chronological per-interaction template plus a retrospective prompt block. No entries yet; none invented — genuinely empty until a real pilot interaction happens
+- `docs/operations/SUCCESS_METRICS.md` (Task 3) — defines the five metrics, and for each one names the exact existing function/field that already computes it (`getMorningReport().totalCalls`, `getTodaysActions().length`, `estimateRevenueImpact()`'s `identifiedCount`/`estimatedMonthlyRevenue`/`estimatedCapturedRevenue`, one derived formula for "follow-ups completed"). No new instrumentation needed — everything asked for already exists in the product
+- `docs/operations/TECH_DEBT_REGISTER.md` (Task 5) — pre-populated with the five verified findings from the Phase 24B reliability audit (no `loading.tsx`, no index on `calls.facility_id`, no unique constraint on `early_access_signups.email`, dead `leads`/`units`/`conversations` schema, unused anon-key Supabase clients), each with Risk/User Impact/Estimated Effort/Priority. No speculative items added
+
+### Outcome
+
+Three lightweight, evidence-grounded operational docs, no code changed, no placeholder content anywhere — each one either references real existing product behavior or stays honestly empty until real pilot data exists to put in it.

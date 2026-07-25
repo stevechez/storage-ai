@@ -11,11 +11,17 @@ import { OperatorActions } from '@/components/storage/operator-actions';
 import { OpportunitySummary } from '@/components/storage/opportunity-summary';
 import { DemoBanner } from '@/components/storage/demo-banner';
 import { RevenueImpactCard } from '@/components/storage/revenue-impact-card';
+import { LogCallForm } from '@/components/storage/log-call-form';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
-	const facility = await getCurrentFacility();
+export default async function DashboardPage({
+	searchParams,
+}: {
+	searchParams: Promise<{ facility?: string }>;
+}) {
+	const { facility: facilityId } = await searchParams;
+	const facility = await getCurrentFacility(facilityId);
 
 	const [report, followUps] = await Promise.all([
 		getMorningReport(facility.id),
@@ -39,6 +45,10 @@ export default async function DashboardPage() {
 			<h1 className="text-4xl font-bold">{facility.name}</h1>
 
 			<p className="text-gray-500 mb-10">{activitySummary}</p>
+
+			<section className="mb-10">
+				<LogCallForm facilityId={facility.id} />
+			</section>
 
 			<section className="mb-10">
 				<h2 className="text-2xl font-semibold mb-4">Good Morning</h2>

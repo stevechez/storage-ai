@@ -1,18 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
-
-interface CallEvent {
-	facilityId: string;
-
-	caller: string;
-
-	transcript?: string;
-
-	outcome?: string;
-}
+import { logCall, type LogCallInput } from '@/lib/storage/calls';
 
 export async function POST(request: Request) {
-	let event: CallEvent;
+	let event: LogCallInput;
 
 	try {
 		event = await request.json();
@@ -27,29 +17,21 @@ export async function POST(request: Request) {
 		);
 	}
 
-	const supabase = createAdminClient();
+	try {
+		const call = await logCall(event);
 
-	const { data: call, error } = await supabase
-		.from('calls')
-		.insert({
-			facility_id: event.facilityId,
+		return NextResponse.json({
+			success: true,
 
-			caller_phone: event.caller,
-
-			transcript: event.transcript,
-
-			outcome: event.outcome,
-		})
-		.select()
-		.single();
-
-	if (error) {
+			call,
+		});
+	} catch (error) {
 		console.error(error);
 
 		return NextResponse.json(
 			{
 				success: false,
-				error: error.message,
+				error: error instanceof Error ? error.message : 'Unknown error',
 			},
 
 			{
@@ -57,10 +39,4 @@ export async function POST(request: Request) {
 			},
 		);
 	}
-
-	return NextResponse.json({
-		success: true,
-
-		call,
-	});
 }
