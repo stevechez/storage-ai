@@ -38,6 +38,12 @@ Captured, not fixed. Every item below was verified directly (code review + local
 **Estimated effort:** N/A — no action needed unless auth work starts and these turn out to be the wrong starting point
 **Priority:** Low (informational only)
 
+### `/leads` and `/facilities` are unlinked, pre-current-model placeholder pages
+**Risk:** Low — copy is honest ("No leads yet" / "No facilities connected"), not confusing or embarrassing
+**User impact:** None currently — not linked from any nav, dashboard, or footer, only reachable by typing the URL directly. Found during the Phase 30 production readiness audit
+**Estimated effort:** Small — either delete (they predate the current `calls`-based model) or wire them up if there's a real reason to keep them
+**Priority:** Low
+
 ---
 
 ## How to use this register

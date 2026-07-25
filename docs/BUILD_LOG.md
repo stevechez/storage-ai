@@ -658,3 +658,30 @@ Phase 29 proposed five documentation tasks. Flagged Task 2 (Product Decision Reg
 ### Outcome
 
 Three lightweight, evidence-grounded operational docs, no code changed, no placeholder content anywhere — each one either references real existing product behavior or stays honestly empty until real pilot data exists to put in it.
+
+## Phase 30 — Production Readiness Review
+
+Date: 2026-07-24
+
+### Goal
+
+Final review before onboarding Founder Customer #1 — not a build phase, a verification pass across links, the actual first-customer journey, security/config, and repo cleanliness.
+
+### Real bug found and fixed: Demo Banner shown on every facility
+
+Task 2 (first customer journey audit) walked the actual journey end-to-end: created an organization + facility exactly as the onboarding script would, viewed its dashboard, logged a real call, confirmed full analysis. In the process, found that `DemoBanner` was hardcoded to render on every facility, not just the actual demo one — a brand-new, genuinely empty real facility's dashboard said *"This is a live demonstration using sample leasing activity,"* which is actively wrong for a real paying customer looking at their own data. Confirmed via the live production URL this hasn't affected anyone yet (only the demo facility has ever been viewed in production) — caught before Customer #1, exactly what this review exists to do. Fixed: `app/dashboard/page.tsx` now only renders `DemoBanner` when `facility.id === DEMO_FACILITY_ID`. Verified live on both sides — real facility no longer shows it, demo facility still does.
+
+### Other completed work
+
+- **Task 1 (readiness audit):** all marketing anchors verified against their targets, all routes (including `/leads`, `/facilities`) return `200` on live production, zero placeholder/TODO content anywhere in source. One low-severity finding: `/leads` and `/facilities` are unlinked pre-current-model placeholder pages — added to the Tech Debt Register rather than duplicated across docs
+- **Task 3 (security & config):** confirmed RLS + `service_role` grants are correct on all 8 tables (including the newer `facilities` contact columns), confirmed `.env.local` is still local-only, confirmed zero hardcoded secrets in source, confirmed `.gitignore` covers `.env.production.local` before that file was ever created
+- **Task 4 (dependency/repo cleanup):** no unused dependencies beyond what's already logged (`@supabase/ssr` is only used by the already-flagged dead anon-key clients), no commented-out code, no duplicate utilities, no stray backup files. Migrations deliberately left untouched — append-only by design, not a cleanup target
+- **Task 5 (launch checklist):** `docs/operations/LAUNCH_CHECKLIST.md` — Technical/Product/Operations, each item with a fast concrete check, explicitly excludes the three items rejected in Phase 28 (signup notification, health dashboard, administration) with a one-line reminder why
+
+### Delivered
+
+`docs/operations/PRODUCTION_READINESS_REVIEW.md` (the full findings) and `docs/operations/LAUNCH_CHECKLIST.md` (the reusable, run-before-every-onboarding checklist). `TECH_DEBT_REGISTER.md` gained one new entry.
+
+### Outcome
+
+The product now has a verified, not just assumed, first-customer journey — and the one real bug it surfaced was fixed and confirmed before any real customer could see it.

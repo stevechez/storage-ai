@@ -1,4 +1,5 @@
 import { getCurrentFacility } from '@/lib/storage/facility';
+import { DEMO_FACILITY_ID } from '@/lib/storage/constants';
 import { getMorningReport } from '@/lib/storage/report';
 import { getFollowUps } from '@/lib/storage/follow-up';
 import { getTodaysActions } from '@/lib/storage/actions';
@@ -40,7 +41,7 @@ export default async function DashboardPage({
 
 	return (
 		<main className="max-w-5xl mx-auto p-8">
-			<DemoBanner facilityName={facility.name} />
+			{facility.id === DEMO_FACILITY_ID ? <DemoBanner facilityName={facility.name} /> : null}
 
 			<h1 className="text-4xl font-bold">{facility.name}</h1>
 
