@@ -1199,3 +1199,49 @@ Every claim above is grounded in a real transcript queried directly from product
 ### Outcome
 
 Phase 39 is complete. A real, independent caller can dial the pilot number, have an actual conversation with an AI assistant that stays within its stated bounds under direct pressure, and have that conversation land — transcript, analysis, and dashboard entry — through the exact same pipeline manual call logging has always used, with no new capability added to that pipeline itself. That was the whole premise of the phase, and it held up against real calls, not just simulated ones.
+
+## Phase 40 — Founder Pilot Readiness
+
+Date: 2026-07-25
+
+### Goal
+
+Not a feature phase. The question: if an independent storage owner sees this for 10 minutes, does it make sense and create enough interest for a pilot? Deliverables are all documentation/readiness artifacts — demo script, one-pager, pilot success criteria, a real first-contact list — explicitly not more product.
+
+### Task 1 — Voice milestone tagged
+
+`git tag phase-39-voice-validation` on `640364d` (Phase 39's close-out commit), pushed to origin. No image screenshots exist to attach, but the underlying evidence is real and already committed, not reconstructed for this phase:
+
+**First successful live call** (`vapi_call_id: 019f98fe-5c6c-744f-bcf0-e69d14289dd4`, 2026-07-25 11:17 UTC, `docs/operations/PILOT_LOG.md`'s first entry):
+```
+AI: Thanks for calling. Can I help you today?
+User: I'm looking for a 10 by 10 storage unit and I need to get it next month.
+AI: Got it. You're looking for a 10 by 10 storage unit for next month. Can I get the...
+```
+Landed on `Founder Pilot Facility`'s dashboard as: intent "Wants to rent a unit," unit size "10x10," timeline "Not specified" (correct — "next month" isn't an urgency keyword), recommended action "Send availability link."
+
+**Lessons learned**, consolidated from Phase 39's three follow-ups: (1) verify assumptions about third-party API access and payload shape against reality, not documentation or memory — this bit twice, once with Vercel CLI access believed absent when it wasn't, once with Vapi's actual webhook shape differing from its own docs; (2) a `200` HTTP response is not proof a webhook's downstream processing succeeded — always confirm by querying the actual data; (3) storing the raw payload (`conversation_transcripts.raw_payload`) turned a documentation mismatch into a fast, confident fix instead of a guess; (4) real test calls surface real findings synthetic ones can't — the direct pricing-question test only became a genuine test once Steve asked a real, pointed question rather than a scripted-sounding one.
+
+### Task 2 — `docs/demo/FOUNDER_DEMO_SCRIPT.md`
+
+Written as a literal, runnable 10-minute script, not a description of one — every line of dialogue and every dashboard element referenced is something already verified working this session, not aspirational.
+
+### Task 3 — `docs/marketing/OPERATOR_ONE_PAGER.md`
+
+Matches the marketing site's already-established voice (Sprint 19–20's positioning: "digital leasing employee," not "AI chatbot" — see `CLAUDE.md`), rather than introducing new language.
+
+### Task 4 — `docs/operations/PILOT_SUCCESS_CRITERIA.md`
+
+Builds on `docs/operations/SUCCESS_METRICS.md` (Phase 29) rather than duplicating it — that file already maps every quantitative metric to the exact function/field that computes it; this one adds the qualitative bar ("what must be true for this to count as a success") on top, consistent with Phase 29's own single-source-of-truth discipline.
+
+### Task 5 — `docs/sales/FIRST_10_OPERATORS.md`
+
+`docs/customer-validation/PROSPECT_LIST.md` (Sprint 17) turned out to still be an empty template — real research mentioned in this session's history apparently never got saved to a file. Redid it for real via web search rather than leave another blank template: genuine, verified independent self-storage facilities, not fabricated, not a mass-scraped list — matching the region (Aptos/Central Coast CA) already implied by the pilot facility's own address and the Twilio pilot number's area code. 10 facilities, each with a real name, address, phone/website, and, in one case, a caught duplicate-listing issue (the same Aptos facility operates under two different marketing names at the same address — worth knowing before referencing the wrong one on a call).
+
+### Verification
+
+Every phone number and address in `FIRST_10_OPERATORS.md` came from the facility's own website (not a secondary directory) wherever one existed, fetched directly rather than trusted from search snippets alone. Every claim in the demo script and one-pager is something already verified working earlier this session — no new claims about product behavior were introduced to make the marketing copy sound better.
+
+### Outcome
+
+Phase 40 is complete. Nothing here changed the product — that was the explicit point, with a long parking-lot list of tempting-but-premature features (PMS integration, SMS, payments, multi-location, more AI) named and deliberately not touched. What exists now: a tagged, evidenced voice milestone; a demo that can actually be run in 10 minutes because every line in it is real; a one-pager that doesn't oversell; a definition of what pilot success actually means beyond a vague feeling; and ten real, named, verified independent operators to start real conversations with. The product was already provably ready for a real conversation — this phase made sure the conversation itself is ready too.
