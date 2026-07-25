@@ -1304,8 +1304,8 @@ The footer's "Contact" link and both legal pages' contact sections use `mailto:s
 
 `tsc --noEmit` and `eslint .` both clean. Full test suite green (unchanged — no test-covered logic was touched, this was markup/content only). Confirmed via `curl` against the local dev server that `/`, `/privacy`, and `/terms` all return `200`, and that every expected footer link renders in the HTML.
 
-**Not verified:** true responsive/visual behavior on desktop, tablet, and mobile (Task 7), and the requested screenshots. The `claude-in-chrome` browser extension was disconnected for this entire phase, so this was checked structurally instead (the grid is `grid-cols-2` under `sm:`, `sm:grid-cols-4` at and above it, with the brand block spanning both mobile columns) but not visually confirmed in a real browser at real breakpoints. Flagged as outstanding rather than silently skipped.
+**Update, same day:** the `claude-in-chrome` extension reconnected after Steve restarted Chrome. Re-verified Task 7 for real against the live production site at three widths — desktop (1440px), tablet (768px), and mobile (390px) — plus a mobile check of `/privacy`. Footer holds a clean 4-column layout down through tablet, and collapses to brand (full-width) → Product/Company (2-col) → Legal (own row) → copyright on mobile, with no overflow, overlap, or cutoff at any width.
 
 ### Outcome
 
-Footer, privacy page, and terms page are built and passing all automated checks, but **not yet committed** — awaiting Steve's review of the contact email choice and his explicit go-ahead, per this project's standing workflow of nothing shipping without an explicit "commit this."
+Phase 40A is complete: footer, privacy page, and terms page committed (`520a1cc`) and pushed to `main`, deployed to production, and verified live — both functionally (curl/link checks) and visually (real-browser screenshots at three breakpoints).
