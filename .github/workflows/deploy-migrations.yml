@@ -1,0 +1,36 @@
+name: Deploy database migrations
+
+# Phase 38 tech debt fix: production's schema had drifted for ~10 phases
+# because applying supabase/migrations/ to the real hosted project was
+# always a manual step, and that manual step silently stopped happening.
+# This makes it automatic instead of relying on someone remembering.
+# See docs/operations/TECH_DEBT_REGISTER.md ("No automated migration
+# deployment") and docs/telephony/TWILIO_SETUP.md ("Production schema
+# drift") for the incident this exists to prevent from recurring.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref hscgmcfbresuqwiuzdfw
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Push migrations
+        run: supabase db push --linked
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}

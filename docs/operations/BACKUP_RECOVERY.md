@@ -6,7 +6,7 @@ Phase 35. Documentation, not automation — the goal is that future Steve can re
 
 **Local dev** (`supabase_db_storage-ai`, Docker): not backed up, and doesn't need to be. `supabase/migrations/*.sql` is the real source of truth for schema — recreate the whole local database from scratch with `supabase db reset --local`. Local data (demo calls, test rows) is disposable by design.
 
-**Production** (Supabase project `hscgmcfbresuqwiuzdfw`, confirmed in `docs/BUILD_LOG.md`'s Phase 24B entry — **not** reachable from this Claude account's Supabase MCP connection, which only lists unrelated projects; confirm backup settings directly in the Supabase dashboard, don't trust this doc's absence of detail as "no backups exist"):
+**Production** (Supabase project `hscgmcfbresuqwiuzdfw`, confirmed in `docs/BUILD_LOG.md`'s Phase 24B entry — **not** reachable from this Claude account's Supabase MCP connection, which only lists unrelated projects, though the `supabase` CLI on this machine turned out to already be authenticated and linked to it directly, discovered Phase 38 after initially assuming otherwise; confirm backup settings directly in the Supabase dashboard, don't trust this doc's absence of detail as "no backups exist"):
 
 - Check **Supabase Dashboard → Project Settings → Database → Backups** for the actual plan tier and retention window. This wasn't verifiable from this environment — confirm it directly rather than assume a paid-tier PITR backup is running.
 - Manual fallback, runnable regardless of plan tier, from a machine with `psql`/`pg_dump` and the production connection string (Dashboard → Project Settings → Database → Connection string):
@@ -49,8 +49,10 @@ Vercel auto-deploys on every push to `main` — no manual redeploy needed for no
 
 1. Import the GitHub repo into a new Vercel project.
 2. **Set Root Directory to `apps/web`** in the project's Settings → General. This is the step that was missed originally — Vercel defaults to the monorepo root, which has no `next` dependency and no `public/` folder, and fails with either "No Output Directory named public" or "No Next.js version detected" depending on what else is misconfigured. With Root Directory correctly set to `apps/web`, Next.js zero-config detection handles the rest — no `vercel.json` needed.
-3. Add the three environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in Settings → Environment Variables, from the Supabase dashboard.
+3. Add the environment variables in Settings → Environment Variables, from the Supabase and Twilio dashboards: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`.
 4. Deploy, then verify per `LAUNCH_CHECKLIST.md`.
+
+**Database schema, separately:** Vercel deploying the app does not apply database migrations — that's `.github/workflows/deploy-migrations.yml` (Phase 38), which runs on push to `main` and needs its own two GitHub repo secrets (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`) set independently of anything in Vercel. If recovering from scratch, confirm this workflow has actually run green at least once — don't assume the app being live means the schema is current; those drifted apart silently for ~10 phases before this workflow existed (see `TECH_DEBT_REGISTER.md`'s "No automated migration deployment").
 
 ## 5. Disaster recovery checklist
 

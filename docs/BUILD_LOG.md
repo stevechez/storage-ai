@@ -1043,3 +1043,29 @@ Every claim in this entry is grounded in either a screenshot Steve provided of a
 ### Outcome
 
 Twilio's plumbing (the actual Phase 38 scope) works end-to-end in production, verified properly. But the real deliverable of this follow-up wasn't Twilio — it was discovering that production has been running on a stale schema for roughly ten phases, including a broken onboarding script nobody had caught. `docs/telephony/TWILIO_SETUP.md` now documents both the Twilio setup and this drift as a named, understood problem rather than a one-time fire drill: the underlying gap (no automated migration deployment) is still open and will recur the same way unless addressed structurally, not just caught again by luck next time.
+
+## Phase 38 follow-up #3 — close the migration-deployment gap
+
+Date: 2026-07-25
+
+### Correction
+
+The previous entry's stated root cause — "no automated migration deployment" — was left open with an assumption baked in: that this Claude had no way to act on it directly. That assumption turned out to be wrong, the same way the "no Vercel access" assumption in follow-up #1 was wrong. Asked to set up Supabase's GitHub integration, checked `supabase projects list` rather than assuming, and found the `supabase` CLI was already authenticated and linked (`"linked":true`) to the real production project (`hscgmcfbresuqwiuzdfw`) — meaning direct `supabase db push`/`migration list`/`migration repair` access to production existed the entire time this session spent routing every fix through Steve manually running SQL in the cloud editor.
+
+### Reconciled the migration tracking table
+
+`supabase migration list` against the linked project showed the same five migrations from the previous incident as unapplied on `remote` — even though their SQL had already been run manually and confirmed present in the schema. Expected: Steve ran the *equivalent SQL* directly, not through Supabase's migration system, so the tracking table (`supabase_migrations.schema_migrations`) never got updated to know about it. Fixed with `supabase migration repair --status applied --linked <five versions>` — marks them as applied without re-running anything (they're already applied; re-running would have failed on "already exists"). Verified with `supabase migration list` afterward: all 15 migrations now show matching `local`/`remote` status. Confirmed safe with `supabase db push --dry-run --linked` → "Remote database is up to date."
+
+### Built the structural fix
+
+Supabase's own Dashboard GitHub integration requires a browser OAuth handshake between Supabase and GitHub that this Claude cannot complete — confirmed by checking `supabase --help` for any CLI-manageable equivalent (none exists; `link`/`projects`/`migration` are the closest subcommands and none configure the GitHub App connection). Built the same outcome a different way: `.github/workflows/deploy-migrations.yml`, triggered on push to `main` touching `supabase/migrations/**`, runs `supabase link` + `supabase db push --linked` using two GitHub Actions secrets. Validated the YAML by actually parsing it (`pnpm dlx js-yaml`), not just eyeballing it.
+
+**Not fully active yet** — needs `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` added as GitHub repository secrets, which only Steve can do (this Claude has no `gh` CLI access and secrets should never pass through chat). Until added, the workflow will fail loudly on the next migration push rather than silently doing nothing — a deliberate improvement in itself over the previous state, where nothing failed loudly because nothing ran at all.
+
+### Verification
+
+`supabase migration list` (before and after repair), `supabase db push --dry-run --linked`, and direct YAML parsing of the new workflow file all confirm the current state as described, not assumed. Updated `TECH_DEBT_REGISTER.md` (status: built, pending activation, still High priority until a real push confirms the workflow runs green), `TWILIO_SETUP.md` (corrected the "not built" claim and the "no access" framing from the previous entry), and `BACKUP_RECOVERY.md` (deployment recovery now covers migrations as a separate concern from the Vercel app deploy, since Phase 38 proved those two can silently diverge).
+
+### Outcome
+
+The actual root cause identified in the previous follow-up is now closed in code, five minutes of Steve's time away from being closed in practice. The pattern worth naming across all three Phase 38 follow-ups: every one of them started with this Claude wrongly assuming it lacked some access, and every one of them was resolved by checking rather than assuming. That's the same discipline this project has applied to product claims since Phase 21 — it applies equally to claims about its own capabilities.
