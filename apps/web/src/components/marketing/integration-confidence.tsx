@@ -11,6 +11,11 @@ export function IntegrationConfidence() {
 					systems. Nothing to install at the office, no new hardware, no phone lines to switch. Your
 					phone still rings the same way it does today.
 				</p>
+				<p className="mt-4 text-steel">
+					Built to work alongside the property management software you already use — SiteLink,
+					storEDGE, and others. Direct integrations are being prioritized based on what early
+					operators actually need, not built speculatively ahead of real demand.
+				</p>
 			</div>
 		</section>
 	);

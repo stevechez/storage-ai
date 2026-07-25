@@ -13,7 +13,8 @@ export function TrustSection() {
 				</p>
 				<p className="mt-4 text-steel">
 					You won&apos;t find customer logos or case studies here yet, because there aren&apos;t
-					any to show honestly. What you get instead is direct access to the person building it.
+					any to show honestly. What you get instead is direct access to Steve, the founder
+					building it.
 				</p>
 			</div>
 		</section>

@@ -1333,3 +1333,28 @@ Renamed in: all marketing-site copy and components (`hero.tsx`, `navbar.tsx`, `f
 ### Outcome
 
 Brand name updated everywhere it's currently user-facing or actively read, without disturbing historical record or touching infrastructure that depends on the domain actually being secured first. Not yet committed — awaiting Steve's review.
+
+## Landing-page feedback triage
+
+Date: 2026-07-25
+
+### What happened
+
+Steve shared external landing-page feedback (buzzword-heavy copy, no social proof, no founder identity, no named integrations) plus his own draft "Phase 40.5 — Trust Layer" plan to address it. Before implementing, cross-checked the feedback against the actual live homepage — grepped marketing components for the specific buzzwords cited ("seamless," "revolutionize," "next-generation": zero matches) and re-read `hero.tsx`, `trust-section.tsx`, `how-it-works.tsx`, and `integration-confidence.tsx` directly.
+
+Most of the feedback didn't match reality: the hero already leads with a concrete missed-call scenario, not generic AI language; the trust section already explicitly refuses fake social proof ("You won't find customer logos or case studies here yet, because there aren't any to show honestly"); a "how it works" breakdown and an integration-fit section already exist. Flagged this discrepancy to Steve rather than executing a redesign against a premise that didn't hold up — the reviewer likely evaluated a description of the product rather than the live URL.
+
+Two real gaps did survive the check: no founder name anywhere (just "the person building it"), and no named PMS integrations (SiteLink, storEDGE) despite an existing "works with your current systems" section.
+
+### What changed
+
+- **`trust-section.tsx`** — "direct access to the person building it" → "direct access to Steve, the founder building it." Asked first whether any bio/credential claims (a "30 years of experience" line had appeared in Steve's own draft notes) were confirmed accurate or just illustrative — Steve chose name-only, no unverified claims, consistent with this project's standing discipline against inventing anything unconfirmed (pricing, case studies, and now bio credentials).
+- **`integration-confidence.tsx`** — added one sentence naming SiteLink and storEDGE, explicitly framed as roadmap-based-on-demand rather than a built feature: "Direct integrations are being prioritized based on what early operators actually need, not built speculatively ahead of real demand." Matches the standing decision (made earlier this session) not to build PMS integration without operator evidence — this states awareness of the ecosystem without committing engineering work or claiming something that doesn't exist.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, and full test suite (46/46) all clean. Confirmed both changes render correctly against the local dev server via real-browser screenshot.
+
+### Outcome
+
+Two small, honest, text-only additions — not the full hero rewrite / new-sections plan originally proposed, since most of what that plan targeted was already built. Not yet committed — awaiting Steve's review.
