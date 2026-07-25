@@ -1087,3 +1087,49 @@ Fetched the run's job/step breakdown, not just its overall conclusion: `checkout
 ### Outcome
 
 The migration deployment pipeline is fully live and proven, not just built and assumed. `TECH_DEBT_REGISTER.md`'s "No automated migration deployment" entry — the one item that had broken Phase 37's "nothing here is must-resolve" conclusion — is now struck through, and that conclusion holds again. This closes the loop that started with an unrelated Twilio webhook returning a confusing `200`.
+
+## Phase 39 — Vapi Voice Integration
+
+Date: 2026-07-25
+
+### Goal
+
+Prove one complete flow: phone call → Twilio → Vapi → transcript → the existing `analyzeTranscript()`/dashboard pipeline, unchanged. Not the AI-tuning phase, not outbound calling, not PMS/payments/multilingual — see the handoff's own Non-Goals.
+
+### Scope decision made before building
+
+`logCall()` requires a `facility_id`, but Phase 38 deliberately left the pilot Twilio number unmapped to any facility. Asked Steve rather than guessing: created a dedicated `Founder Pilot Facility` (via direct SQL, same shape `scripts/onboard-facility.mjs` produces) in both local and production, kept separate from `DEMO_FACILITY_ID`'s seeded sample data. Added `PILOT_FACILITY_ID` to `lib/storage/constants.ts`.
+
+### Verified Vapi's actual API shape before writing code against it
+
+Vapi's docs are noticeably less complete than Twilio's — several fetches came back partial or 404. Rather than build against half-remembered training knowledge (exactly the mistake that caused the Phase 38 signature-validation risk), used WebFetch/WebSearch to confirm, with real citations: the end-of-call-report webhook envelope (`message.call.customer.number`, `message.artifact.transcript`, `message.call.startedAt`/`endedAt`), the Twilio-number-import API (`POST /phone-number` with `assistantId` for auto-routing), and the assistant creation API (`POST /assistant`, `model.messages` for the system prompt, `server.url`/`server.headers` for the webhook). Where confidence stayed low — Vapi's built-in webhook-secret mechanism (`x-vapi-secret` vs HMAC `x-vapi-signature`, conflicting/incomplete docs) and voice/transcriber provider defaults — made a deliberate simplicity choice instead of guessing: defined a custom `X-Vapi-Webhook-Secret` header entirely under this app's own control rather than relying on Vapi's ambiguous built-in scheme, and left `voice`/`transcriber` unset in the assistant creation request so Vapi's own account defaults apply rather than guessing at a specific provider/voiceId that might not even be enabled on the account.
+
+### Completed — Task 3: conversation capture
+
+New `conversation_transcripts` table (`supabase/migrations/20260725180000_add_conversation_transcripts.sql`) — deliberately separate from `calls`, matching Phase 38's `telephony_events` precedent. Stores the full raw webhook payload as `jsonb` alongside the extracted fields, so a parsing bug or a Vapi schema change never loses data that can't be reprocessed later. `vapi_call_id` is unique — doubles as the webhook-retry idempotency guard (see Task 4).
+
+`parseVapiEndOfCallReport()` (`lib/vapi/webhook.ts`) — pure, TDD'd — parses the verified payload shape into a clean internal type, returns `null` for any other Vapi message type (Vapi sends several to the same Server URL) rather than erroring on them.
+
+### Completed — Task 4: transcript processing, reusing the existing pipeline
+
+`processVapiEndOfCallReport()` (`lib/vapi/transcripts.ts`) does two things in order: inserts the raw transcript, then calls the *existing* `logCall()` — the same function manual entry uses — with zero new analysis logic written. Verified live, not assumed: POSTed a realistic Vapi payload at the local dev server, confirmed the resulting `calls` row, and confirmed the dashboard rendered the exact same `analyzeTranscript()` output (intent, unit size, timeline, priority, recommended action) a manually-typed call with the same transcript would produce.
+
+Idempotency: the `conversation_transcripts` unique constraint is checked first; a duplicate webhook delivery (Vapi, like Twilio, can retry) is detected there and `logCall()` is deliberately not called a second time. Verified by sending the same payload twice: first response `"result":"processed"`, second `"result":"duplicate"`, confirmed exactly one `calls` row existed afterward, not two. Found and logged (not fixed) a narrow related gap in `TECH_DEBT_REGISTER.md`: if `logCall()` itself fails *after* the transcript insert already succeeded, a retry would skip both rather than retrying `logCall()` — no evidence this has happened, real enough to write down.
+
+### Completed — Task 2 (webhook side) + Task 5 setup
+
+`/api/vapi/webhook` (`app/api/vapi/webhook/route.ts`) — checks the custom secret header in production only (same `NODE_ENV` gate as Twilio's), always returns `200` even when downstream processing fails (a caller shouldn't hear anything different because of a logging hiccup — same philosophy as the Twilio webhook), ignores non-`end-of-call-report` message types rather than erroring on them.
+
+`scripts/setup-vapi-assistant.mjs` — one-time setup script (not idempotent by design, matching `onboard-facility.mjs`'s pattern): creates the assistant with the Task-1-constrained system prompt, generates a fresh `VAPI_WEBHOOK_SECRET`, imports the existing Twilio pilot number into Vapi with `assistantId` set for auto-routing. Verified both its error paths directly (missing `.env.production.local` file, and missing an individual required variable) rather than just reading the code and assuming they work.
+
+### Not completed — requires Steve's action
+
+Task 1 (Vapi account creation) and the actual running of the setup script both require a real account this Claude cannot create, same limitation as Twilio's Phase 38 Task 1. Task 5 (founder verification with real calls across 8 scenarios) requires the assistant to actually be live. All of this is checklisted in `docs/telephony/VAPI_SETUP.md` §7–8, honestly marked pending rather than implied done.
+
+### Verification
+
+`tsc --noEmit`, `eslint`, and the full Vitest suite (43/43, up from 39) all pass. `pnpm build` succeeds with `/api/vapi/webhook` correctly listed. End-to-end verified against the real local database and dev server: transcript storage, the `logCall()` bridge, the dashboard rendering identical analysis to manual entry, and retry idempotency — all confirmed live, not assumed from reading the code.
+
+### Outcome
+
+Everything on this Claude's side of the account-creation boundary is built, tested, and verified — including the one piece (Vapi's own webhook-secret ambiguity) where the honest answer was "the docs don't fully agree with each other," addressed by choosing a simpler design under this app's own control rather than guessing which of two half-documented Vapi mechanisms was correct. What's left is exactly the same shape as Phase 38's remaining steps: run the setup script, add two values to Vercel, place real calls — all documented precisely enough that none of it requires re-deriving anything.

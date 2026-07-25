@@ -11,6 +11,7 @@ Every remaining open item below, re-ranked by actual product readiness rather th
 **Can wait until after first customer** (each explicitly gated on real usage supplying evidence that doesn't exist yet):
 - `'converted'`/`'lost'` are not enforced as terminal statuses
 - Supabase clients have no generated `Database` type
+- Vapi webhook retry can drop a call if `logCall()` fails after the transcript insert already succeeded (new, see below) — no evidence it has happened
 
 **Future scalability** (not urgent now; relevant once the product or team outgrows today's scale):
 - No server-side check that a submitted `facilityId` matches an authenticated identity
@@ -20,6 +21,14 @@ Every remaining open item below, re-ranked by actual product readiness rather th
 - `OpportunityPriority`'s `'low'` value is never actually produced
 - `lib/supabase/client.ts` / `server.ts` (anon-key clients) — intentionally kept scaffolding, not really debt
 - `profiles` table is fully unreferenced (new finding, see below)
+
+## Data Integrity
+
+### `processVapiEndOfCallReport()` can drop a call on a specific retry timing
+**Risk:** Low — narrow window, no evidence it has occurred
+**User impact:** None observed. Idempotency for Vapi webhook retries is keyed off the `conversation_transcripts` insert's unique constraint on `vapi_call_id` — if that insert succeeds but the subsequent `logCall()` call then fails (e.g. a transient DB error), the call never makes it into `calls`. A retry of the same webhook sees the transcript already exists, correctly treats it as a duplicate, and skips reprocessing — including skipping the `logCall()` that never actually happened the first time. Found while building the idempotency guard itself (Phase 39), not from a real incident
+**Estimated effort:** Small — track a separate "fully processed" flag (e.g. a `processed_at` column) rather than overloading one insert's uniqueness for two purposes
+**Priority:** Low (Can wait until after first customer — revisit if this is ever actually observed, e.g. a gap between `conversation_transcripts` and `calls` row counts)
 
 ## Deployment
 
