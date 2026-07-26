@@ -1870,3 +1870,105 @@ still local, only the data cleanup reached production directly).
 
 The demo workspace is now curated, protected, and resettable — a dependable sales asset rather
 than an artifact of whatever testing happened to touch it most recently. Not yet committed.
+
+## Phase 44d — Operational Onboarding
+
+Date: 2026-07-26
+
+### Goal
+
+Turn customer onboarding from tribal knowledge (gained the hard way onboarding Harbor Self
+Storage) into something any engineer can execute and independently verify, without founder
+assistance. Standardize, don't automate.
+
+### Design decision: CLI script, not a web page
+
+The phase brief left this open ("an internal onboarding screen or developer utility"). Asked
+before building, since it's a real tradeoff: a web page would be visual and screenshot-able, but
+adds a new unauthenticated route exposing infrastructure details (Vapi assistant IDs, phone
+numbers) to anyone who reaches the URL — the dashboard still has no auth. Steve chose the CLI
+script, matching the exact pattern already established by `onboard-facility.mjs`,
+`setup-vapi-assistant.mjs`, and `reset-demo-workspace.mjs`.
+
+### What was built
+
+`scripts/onboarding-status.mjs` — read-only, checks a facility's real state across five sections
+(Facility, Phone, Assistant, Verification, Completion), each item reported as Complete / Pending /
+Needs attention. Two checks call Vapi's own API directly (when `VAPI_API_KEY` is available)
+rather than trusting our own stored `vapi_assistant_id`: does the assistant actually exist on
+Vapi, and does its configured webhook secret actually match Vercel's deployed
+`VAPI_WEBHOOK_SECRET`. That second check directly automates the exact diagnostic that took three
+real call-and-retry cycles to work out by hand during Harbor's onboarding (Phase 42) — it now
+reports `MATCH` or `MISMATCH` in one command, and **never prints either secret value**, comparing
+them programmatically instead.
+
+### A second real, separate bug found while testing this
+
+Attempted to run the new script for real against Harbor Self Storage and hit a genuine
+environment problem, not a bug in the new script: `apps/web/.env.production.local`'s
+`NEXT_PUBLIC_SUPABASE_URL` was the literal string `[SENSITIVE]` — the same `vercel env pull`
+placeholder-for-Sensitive-variables quirk this project already hit once before (documented
+earlier in this log) and apparently hit again. This would have silently broken every admin script
+that reads this file, not just the new one. Fixed directly (with Steve's explicit confirmation
+first) by writing the real, non-secret project URL
+(`https://hscgmcfbresuqwiuzdfw.supabase.co`, known from `supabase projects list`, not printed via
+a full file read — patched with `sed` specifically to avoid pulling the file's other real secrets
+into this conversation). A second, separate instance of the same issue then surfaced on
+`SUPABASE_SERVICE_ROLE_KEY` — a genuine secret this time, not something reconstructable, so left
+for Steve to fix directly (unmark it as Sensitive in Vercel and re-pull, or paste the real value
+into the file himself).
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46) all clean; `node --check` on the new script.
+Could not run the script fully end-to-end myself — blocked on the `SUPABASE_SERVICE_ROLE_KEY`
+issue above. Verified its logic is correct by independently querying production directly
+(`supabase db query --linked`) for every fact the script checks against Harbor Self Storage —
+facility record, organization link, Twilio number, Vapi assistant ID, latest transcript, latest
+call — and confirmed all match what the script should report. The two Vapi-API-dependent checks
+(assistant existence, webhook secret match) are still unconfirmed by a literal run; documented
+honestly as "expected output, not yet executed" in `CUSTOMER_IMPLEMENTATION_RUNBOOK.md` rather
+than presented as a captured real result.
+
+### Documentation
+
+`docs/operations/CUSTOMER_IMPLEMENTATION_RUNBOOK.md`'s Phase 5 (Verification) now leads with
+running `onboarding-status.mjs` before any manual troubleshooting, with the caveated
+expected-output example described above.
+
+### Outcome
+
+Onboarding verification is now a runnable command, not something only reconstructable by asking
+the founder what to check. One real environment bug found and partly fixed along the way,
+directly relevant to every other production script in this repo, not just this phase's own work.
+
+**Follow-up, same day — the script actually ran, and caught a real bug in itself:**
+
+Steve fixed `SUPABASE_SERVICE_ROLE_KEY` and re-ran the process. First real end-to-end execution
+immediately surfaced a genuine defect: it printed `Webhook authenticated: Needs attention —
+MISMATCH` but then `Completion: READY` anyway — the `allChecks` array feeding the final verdict
+never actually included the three Vapi-API-derived results (`assistantExists`,
+`webhookConfigured`, `webhookAuthenticated`), only the database-side checks. A tool whose entire
+purpose is catching exactly this kind of silent contradiction had one of its own. Fixed by
+tracking each Vapi check as `true` / `false` / `null` (verified-good / verified-bad / couldn't
+verify) and rewriting the completion rule to `!== false` — a `null` doesn't block READY, since
+"unknown" isn't the same as "broken," but an explicit `false` now does, which it hadn't before.
+
+Re-running after that fix reproduced the same MISMATCH — but before treating that as a real
+regression on Harbor's actual production Vapi config, checked the more likely explanation first:
+`VAPI_WEBHOOK_SECRET` in `.env.production.local` was *also* the `[SENSITIVE]` placeholder — a
+third instance of the same Vercel CLI quirk found this same session, meaning the "MISMATCH" was
+the script correctly comparing Harbor's real secret against the literal string `[SENSITIVE]`, not
+evidence Harbor's webhook is actually broken. Flagged this distinction explicitly rather than
+either assuming a false alarm or assuming a real incident without checking. Steve fixed the value
+directly; a subsequent run showed `Webhook authenticated: matches` and `Completion: READY`.
+
+Updated `CUSTOMER_IMPLEMENTATION_RUNBOOK.md`'s example output from "expected, not yet executed"
+to the genuine real run, with the bug-and-fix narrative kept in the doc rather than smoothed over
+— the corrected script, run for real, is what's shown, not a hypothetical.
+
+### Final outcome
+
+The onboarding verification tool is now genuinely proven, not just logically reasoned through:
+run twice for real, once catching a real defect in itself, once correctly distinguishing a local
+environment artifact from an actual production incident. Not yet committed.

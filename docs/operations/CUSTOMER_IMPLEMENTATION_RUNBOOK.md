@@ -123,6 +123,43 @@ The `--environment=production` flag is not optional — omitting it can silently
 environment's value, which will look like a normal secret string and fail in exactly the way
 described below.
 
+## Local Environment Verification
+
+**This is not a code bug — it's an environment synchronization problem, and it will happen
+again.** Phase 44d hit it three separate times in the same file in one session
+(`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPI_WEBHOOK_SECRET`), each producing a
+different, confusing symptom rather than one obvious one: a Supabase client construction error,
+an opaque "Invalid API key," and a false-positive webhook-secret mismatch that looked exactly
+like a real production incident until checked. `vercel env pull` writes the literal string
+`[SENSITIVE]` for any variable marked "Sensitive" in Vercel's dashboard — Vercel's own CLI cannot
+retrieve a sensitive value's plaintext back out, by design. A freshly-pulled file with every
+expected variable name present can still be completely unusable.
+
+**Before running any operational script that reads `.env.production.local`, check for
+placeholder or missing values — don't assume a pull succeeded just because the command exited
+cleanly:**
+
+```bash
+cd apps/web
+grep -nE '=(\[SENSITIVE\]|undefined|null|)$' .env.production.local
+```
+
+If this prints anything, that variable is not real and needs fixing before the script that
+depends on it will work:
+
+- **`[SENSITIVE]`** — the variable is marked Sensitive in Vercel. Get the real value from
+  Vercel's dashboard (Settings → Environment Variables) and paste it into the file directly, or
+  un-mark it as Sensitive first (none of the three above are ever printed by any script in this
+  repo — they're read into memory and used, never displayed — so the protection isn't buying
+  much here) and re-pull.
+- **`undefined` / `null` / empty** — the variable doesn't exist in the environment you pulled
+  from, or was never set for it. Confirm you used `--environment=production`, not the default.
+
+As of this writing, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and
+`VAPI_WEBHOOK_SECRET` are still marked Sensitive in Vercel — a future fresh pull will very likely
+reproduce this exact problem again until that changes. Run the check above first, every time,
+rather than rediscover it the hard way.
+
 ## Phase 1 — Create the facility record
 
 ```bash
@@ -233,6 +270,59 @@ shows the values you just set.
 Storage, Phase 42) hit exactly the failure this phase exists to catch, three times in a row,
 before it was fixed. Skipping this phase means finding out a facility was never actually live
 only when a real customer complains that no one called them back.
+
+**Before doing any of this by hand, run the status check (Phase 44d):**
+
+```bash
+cd apps/web
+node scripts/onboarding-status.mjs --facility-id "<id>"
+```
+
+This checks Facility / Phone / Assistant / Verification / Completion in one command — including,
+when `VAPI_API_KEY` is available locally, calling Vapi's own API to confirm the assistant really
+exists and that its configured webhook secret actually matches Vercel's deployed one. That
+specific mismatch is exactly what took three real call-and-retry cycles to diagnose by hand
+during Harbor's onboarding (see the "If step 5 returns nothing" section below) — this script
+reports it directly as `Webhook authenticated: Needs attention`, without ever printing either
+secret value. It doesn't replace placing a real call (below) — it can't verify the assistant
+actually sounds right, only that the plumbing is in place — but it turns most of the manual
+troubleshooting below into one command run first.
+
+**Real output**, actually run against Harbor Self Storage, after fixing three separate
+`.env.production.local` values that had all been silently stuck as the literal `[SENSITIVE]`
+placeholder (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPI_WEBHOOK_SECRET` — a
+recurring Vercel CLI quirk, not three unrelated bugs). The first real run also caught a genuine
+bug in the script itself: it reported `Webhook authenticated: Needs attention — MISMATCH`
+correctly, but `Completion: READY` anyway — the completion check never actually included the
+Vapi-derived results. Fixed before trusting any of this output; the run below is from the
+corrected version:
+
+```
+Onboarding status — Harbor Self Storage (d483ca9f-b87b-4d05-9fd8-b9bda83862b3)
+Workspace type: internal
+
+Facility
+  [Complete       ] Facility record — created 2026-07-26T02:18:31+00
+  [Complete       ] Organization linked
+
+Phone
+  [Complete       ] Twilio number assigned — +14085836145
+
+Assistant
+  [Complete       ] Vapi assistant ID recorded — 2416bc20-d308-4520-80aa-1640d5c4c11a
+  [Complete       ] Assistant exists on Vapi — Harbor Self Storage
+  [Complete       ] Webhook configured — https://storage-ai-sigma.vercel.app/api/vapi/webhook
+  [Complete       ] Webhook authenticated — matches
+
+Verification
+  [Complete       ] Verification call completed — last: 2026-07-26T04:55:22+00
+  [Complete       ] Transcript received
+  [Complete       ] AI analysis available
+  [Complete       ] Dashboard receiving calls — last: 2026-07-26T04:55:22+00
+
+Completion
+  READY — every check above passed. Safe to tell this operator they're live.
+```
 
 1. Call the number yourself.
 2. Confirm Vapi answers — not silence, not the old static "under founder testing" greeting.
