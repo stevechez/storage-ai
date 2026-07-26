@@ -1971,4 +1971,16 @@ to the genuine real run, with the bug-and-fix narrative kept in the doc rather t
 
 The onboarding verification tool is now genuinely proven, not just logically reasoned through:
 run twice for real, once catching a real defect in itself, once correctly distinguishing a local
-environment artifact from an actual production incident. Not yet committed.
+environment artifact from an actual production incident.
+
+**Follow-up, same day — ran it against the Founder Pilot Facility too:** surfaced a real,
+previously-unnoticed gap — `facilities.vapi_assistant_id` had never actually been backfilled for
+the original pilot facility, only `twilio_phone_number` (Phase 41's migration only set the
+latter). Harmless functionally (routing only ever depends on `twilio_phone_number`, confirmed by
+the Verification section showing everything Complete regardless), but the reference metadata
+itself was simply missing — invisible until this tool checked for it directly. Recovered the real
+value from Vapi's own API (`GET /phone-number`, matched on the pilot's real number) rather than
+guessing, and backfilled it. Re-run confirmed `READY`. One cosmetic, non-urgent finding along the
+way: the assistant is still named `StorageAI Founder Pilot` in Vapi's own dashboard, a
+pre-rebrand name that was never part of the code/docs rebrand since it lives entirely in Vapi's
+system, not this repo.
