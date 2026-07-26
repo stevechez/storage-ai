@@ -2058,3 +2058,58 @@ correctly, and the debug label is gone.
 
 The platform's own question changes from "can this work" to "can we deliver a great first
 customer experience" — Phase 45's explicit success definition. Not yet committed.
+
+## Phase 46a — Marketing Optimization: "Show, Don't Explain"
+
+Date: 2026-07-26
+
+### Goal
+
+Replace the homepage's "How It Works" section — a four-step internal-architecture framing
+(Capture / Prioritize / Respond / Measure) — with a single customer story a self-storage owner
+can understand in 15 seconds, without a demo call. Communication only: no product changes, no
+homepage redesign beyond this one section, no invented capabilities.
+
+### What changed
+
+`components/marketing/how-it-works.tsx` rewritten as one continuous scene (a renter calls → the
+assistant answers → the conversation appears on the dashboard → the operator follows up and rents
+the unit), using the *same* real example throughout (a 10×10 unit, this weekend) rather than four
+disconnected feature demos, per the phase's own "tell one story" principle. Kept the export name,
+the `id="how-it-works"` anchor, and the section's position in `app/page.tsx` — nothing else
+referencing this section (`hero.tsx`, `navbar.tsx`, `footer.tsx`, all linking to `#how-it-works`)
+needed to change.
+
+Step 3's visual deliberately mirrors the real `OpportunityCard` component's actual fields
+(Customer Need, Unit Size, Timeline, Priority, Recommended Action — `components/storage/
+opportunity-card.tsx`) rather than inventing marketing-only fields like "Customer Name" (the real
+dashboard doesn't capture one at this stage). Did not literally reuse the dashboard component
+itself — this project has an intentional, established split between the dashboard's plain
+gray/black system and the marketing site's custom design tokens (concrete/ink/steel/signal); a
+literal import would have looked visually inconsistent with the rest of the page. Instead, the
+same real field structure was rebuilt with the marketing site's own tokens, matching the pattern
+`hero.tsx`'s `CallTransformation` already established for exactly this kind of "represent real
+data honestly, styled for this page" component.
+
+Copy follows the phase's language guidance directly — "the renter calls," "the assistant
+answers," "you follow up," no "AI-powered," "seamlessly," or similar. Verified by re-reading the
+final copy against the explicit avoid-list before considering this done.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46) all clean. Confirmed live against the local
+dev server at desktop width — full four-step story renders correctly with the connecting arrows
+and all three visual styles (incoming-call card, transcript exchange, opportunity-card mirror,
+converted outcome). Mobile viewport confirmed structurally (`curl` against the rendered HTML,
+same responsive padding classes already verified working across breakpoints in Phase 40A) rather
+than a live mobile screenshot — the browser automation tool's resize action was unreliable this
+session; nothing in this component's layout depends on a breakpoint-specific class that would
+behave differently at narrow widths, so this is a low-risk gap, not skipped without reason.
+Grepped for any other reference to the old step names or section copy — none found; every
+`#how-it-works` link elsewhere in the codebase points at the same still-valid anchor.
+
+### Outcome
+
+The homepage now shows one real, followable customer journey instead of describing the system's
+internal workflow — and every visual in it represents something the product actually does today.
+Not yet committed.
