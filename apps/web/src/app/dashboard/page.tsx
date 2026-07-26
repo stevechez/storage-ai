@@ -49,22 +49,33 @@ export default async function DashboardPage({
 	const phoneConnected = Boolean(facility.twilio_phone_number && facility.vapi_assistant_id);
 	const isNewCustomerWorkspace = isCustomerWorkspace && followUps.length === 0;
 
+	// Phase 45: a customer workspace keeps its assistant/phone status visible even once
+	// real calls start coming in, not just during the empty state — otherwise the moment
+	// activity begins, an operator loses every indication their assistant is actually
+	// working (the exact gap the Phase 42 friction log found). Reuses already-computed
+	// values (recentOutcomes, todaysActions, followUps) rather than any new query.
+	const callsRecently = recentOutcomes.pending + recentOutcomes.converted + recentOutcomes.lost;
+	const lastCallAt = followUps[0]?.createdAt ?? null;
+
 	return (
 		<main className="max-w-5xl mx-auto p-8">
 			{isDemoWorkspace ? <DemoBadge /> : null}
 
 			<h1 className="text-4xl font-bold">{facility.name}</h1>
 
-			{isNewCustomerWorkspace ? (
+			{isCustomerWorkspace ? (
 				<div className="mb-10">
-					<CustomerReadinessCard phoneNumber={facility.twilio_phone_number} phoneConnected={phoneConnected} />
+					<CustomerReadinessCard
+						phoneNumber={facility.twilio_phone_number}
+						phoneConnected={phoneConnected}
+						callsRecently={callsRecently}
+						activeOpportunities={todaysActions.length}
+						lastCallAt={lastCallAt}
+					/>
 				</div>
 			) : (
 				<p className="text-gray-500 mb-10">{activitySummary}</p>
 			)}
-
-			{/* Phase 44a verification only — remove once workspace_type is used for real behavior (Phase 44b+) */}
-			<p className="text-xs text-gray-300 mb-6">Workspace: {facility.workspace_type}</p>
 
 			{/* Phase 44c: manual call logging is disabled for the demo workspace — this is the
 			    exact path that already contaminated it once (a real test call logged directly
@@ -116,6 +127,19 @@ export default async function DashboardPage({
 					</section>
 				</>
 			)}
+
+			{/* Phase 45: a real customer with a real question had no way to reach anyone from
+			    within the product itself — every other contact point lives on the marketing
+			    site, not here. Scoped to customer workspaces only; internal/demo don't need it. */}
+			{isCustomerWorkspace ? (
+				<p className="mt-10 text-xs text-gray-400">
+					Questions about what you&apos;re seeing? Email{' '}
+					<a href="mailto:stevechez@gmail.com" className="underline">
+						stevechez@gmail.com
+					</a>
+					.
+				</p>
+			) : null}
 		</main>
 	);
 }

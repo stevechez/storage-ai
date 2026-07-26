@@ -1984,3 +1984,77 @@ guessing, and backfilled it. Re-run confirmed `READY`. One cosmetic, non-urgent 
 way: the assistant is still named `StorageAI Founder Pilot` in Vapi's own dashboard, a
 pre-rebrand name that was never part of the code/docs rebrand since it lives entirely in Vapi's
 system, not this repo.
+
+## Phase 45 — First Pilot Customer Readiness
+
+Date: 2026-07-26
+
+### Goal
+
+Not another feature phase — making the existing platform reliable, understandable, and
+supportable for a real first pilot customer's first week. Every change had to answer one
+question: would this make that customer's actual experience noticeably better.
+
+### Product trust review (Deliverable 5) — done first, to drive the rest
+
+Built a temporary local `customer`-workspace test facility with real activity (not just the
+empty state already covered in Phase 44b) and walked through the populated dashboard as a new
+operator would. Most existing copy held up — no real "developer-oriented" language found beyond
+what Phase 44b already fixed. Three real, concrete findings:
+
+1. **The moment any real call arrives, every trace of assistant/phone status disappears.** The
+   Phase 44b readiness card only ever showed for a workspace with *zero* calls — a customer with
+   real activity has no way to check their own connection status at all, the exact gap the Phase
+   42 friction log first named.
+2. **A leftover developer-only label** (`Workspace: {type}`, added in Phase 44a with its own
+   comment saying "remove once workspace_type is used for real behavior") was still rendering on
+   every dashboard — that condition has now clearly been met.
+3. **No way to contact anyone from inside the product itself.** Every support channel lives on
+   the marketing site; the actual dashboard a customer uses daily had nothing.
+
+All three were high-value and low-risk, so all three were fixed directly rather than deferred —
+nothing new needed adding to `SELF_SERVICE_ROADMAP.md` from this review; everything else checked
+(empty-state wording, action button labels, response drafts) was already solid from prior phases.
+
+### Deliverable 1 — Customer health made persistent, not just at zero-activity
+
+`components/storage/customer-readiness-card.tsx` extended (not duplicated) to show real,
+already-computed stats — calls in the last 24 hours (`recentOutcomes`, existing), active
+opportunities (`todaysActions.length`, existing), and a relative "last call received N ago"
+(`followUps[0].createdAt`, already sorted by recency in `getFollowUps()`) — alongside the
+existing phone/connection status. `dashboard/page.tsx` now shows this for every `customer`
+workspace regardless of activity level, not only the empty state. Also switched the phone number
+display to the existing `formatPhoneNumber()` helper (previously showed raw E.164) — reused, not
+new infrastructure. Removed the Phase 44a debug label per finding #2 above.
+
+### Deliverable 2 — Empty-state and trust polish
+
+Most empty-state copy needed no changes (see review above). Added finding #3's fix: a small,
+customer-workspace-only contact line at the bottom of the dashboard
+(`mailto:stevechez@gmail.com`, the same address already used on the marketing site).
+
+### Deliverables 3 + 4 — `docs/operations/PILOT_SUPPORT_GUIDE.md`
+
+First-day checklist, common questions with honest (not deflecting) answers, known limitations
+stated plainly rather than left for the customer to discover, recovery procedures pointing
+directly at `onboarding-status.mjs` and the local-environment-verification gotcha, and an honest
+statement that no support tier exists beyond the founder — rather than inventing an escalation
+chain that isn't real. First-week cadence (Day 0/1/3/7) written as an actual answer to "what does
+the first week look like," not just a deliverable checkbox: onboarding + verification on day 0,
+reviewing every real call against what actually happened on day 1, a direct check-in conversation
+on day 3 (matching the same "a real pointed question beats a synthetic test" discipline from
+Phase 39's founder verification calls), and a real retrospective on day 7 deciding whether
+anything just learned should move `SELF_SERVICE_ROADMAP.md` items from "no evidence yet" to
+"here's the evidence."
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46) all clean. Verified both the empty-activity
+and populated health card states directly against a real local test facility (created, verified,
+cleaned up) — confirmed live/not-yet-connected states render correctly, real stats compute
+correctly, and the debug label is gone.
+
+### Outcome
+
+The platform's own question changes from "can this work" to "can we deliver a great first
+customer experience" — Phase 45's explicit success definition. Not yet committed.
