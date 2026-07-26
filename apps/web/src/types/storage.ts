@@ -13,5 +13,6 @@ export interface Facility {
 	contact_email: string | null;
 	twilio_phone_number: string | null;
 	vapi_assistant_id: string | null;
+	workspace_type: 'demo' | 'internal' | 'customer';
 	created_at: string;
 }

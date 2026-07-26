@@ -48,6 +48,9 @@ export default async function DashboardPage({
 
 			<p className="text-gray-500 mb-10">{activitySummary}</p>
 
+			{/* Phase 44a verification only — remove once workspace_type is used for real behavior (Phase 44b+) */}
+			<p className="text-xs text-gray-300 mb-6">Workspace: {facility.workspace_type}</p>
+
 			<section className="mb-10">
 				<LogCallForm facilityId={facility.id} />
 			</section>

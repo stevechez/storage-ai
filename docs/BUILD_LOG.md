@@ -1690,4 +1690,58 @@ must never reach a customer workspace, internal workspaces may stay messy, custo
 start empty, sample data must be optional/removable, classification is metadata not
 infrastructure, every roadmap phase must leave production deployable on its own) placed near the
 top of the document as the standard future decisions should be checked against, rather than
-reasoning left implicit across the rest of the document. Not yet committed.
+reasoning left implicit across the rest of the document.
+
+## Phase 44a — Workspace Classification Foundation
+
+Date: 2026-07-26
+
+### Goal
+
+Implement the minimum infrastructure to support the workspace classification designed in Phase
+43 — metadata only, zero behavior change. Explicit constraints: no UX change, no demo mode, no
+auth, no filtering, keep the diff small.
+
+### What changed
+
+`supabase/migrations/20260726153218_add_facility_workspace_type.sql` — added
+`facilities.workspace_type` (`text not null default 'customer'`, following this project's
+existing convention of a text column plus a check constraint rather than a native Postgres enum,
+matching `calls.status`/`calls_status_check`), with a `facilities_workspace_type_check`
+constraint restricting values to `'demo' | 'internal' | 'customer'`. Backfilled the three real
+facilities: Lonestar Self Storage → `demo`, Founder Pilot Facility → `internal`, **Harbor Self
+Storage → `internal`, not `customer`** — it's a Phase 42 dry run with real infrastructure, not an
+actual paying operator, and this is exactly the distinction `WORKSPACE_ARCHITECTURE.md`'s
+migration strategy warned was easy to get wrong. Migration written to be safe to re-run
+(`add column if not exists`, `drop constraint if exists` before adding it, backfill by specific
+known ID).
+
+`types/storage.ts` — added `workspace_type: 'demo' | 'internal' | 'customer'` to the `Facility`
+interface. No changes needed to `getCurrentFacility()` or `getFacilityByPhoneNumber()` — both
+already `select('*')`, so the new column flows through automatically once it exists in the
+database; this is the entire reason "update facility queries" turned out to require zero query
+changes, only a type update.
+
+`dashboard/page.tsx` — added one line, explicitly commented as Phase 44a-only and easy to remove:
+a small `text-xs text-gray-300` label reading `Workspace: {facility.workspace_type}`, for
+verification purposes only. No other visual change.
+
+Corrected a stale cross-reference found while touching `CUSTOMER_IMPLEMENTATION_RUNBOOK.md` for
+this phase: it said `twilio_phone_number`/`vapi_assistant_id` were "set in Phase 6," but that
+document only has five phases (the mapping step is actually Phase 4) — a leftover from writing
+that document quickly in the previous phase. Fixed alongside adding the new field's mention.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46) all clean. Applied the migration against
+local Supabase (`supabase db reset --local`) and confirmed directly: the local demo facility
+correctly shows `workspace_type = 'demo'`, and the check constraint genuinely rejects an invalid
+value (tested with `'bogus'`, got a real Postgres constraint violation, not assumed from reading
+the SQL). Confirmed the dashboard renders `Workspace: demo` correctly by fetching the real
+rendered HTML from the local dev server, not just reading the JSX. Did not re-test the Vapi
+webhook call-routing path — nothing in that logic was touched, only an unrelated additive column.
+
+### Outcome
+
+The system now knows what each facility is; nothing yet acts on that knowledge, exactly as
+specified. Production behavior is unchanged — confirmed, not assumed. Not yet committed.
