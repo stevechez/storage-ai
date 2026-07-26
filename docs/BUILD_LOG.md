@@ -1478,3 +1478,216 @@ broader refactor. A second facility can now be onboarded following
 a real second facility, since that requires this migration to reach production first (a
 commit/push, awaiting Steve's go-ahead per the standing workflow) and a real decision to spend
 money on a second Twilio number. Not yet committed.
+
+## Phase 42 — "Become Joe": a real second-facility onboarding, not a simulation
+
+Date: 2026-07-25/26
+
+### Goal
+
+Prove Phase 41's claim for real, not just in theory: onboard a second, real-looking fictional
+operator — Harbor Self Storage — through the actual, complete flow (intake, database, real
+Twilio number, real Vapi assistant, a real phone call, real dashboard verification), entirely
+through configuration, with zero application code changes.
+
+### What actually happened
+
+Split the work by capability, not convenience: intake, database provisioning, dashboard
+walkthrough, and all verification were done directly against real production; buying the Twilio
+number, creating the Vapi assistant, and placing the real test call needed Steve, since those
+require either real money (a purchase I don't make without explicit confirmation) or a real
+phone (which I don't have).
+
+**Intake:** full, complete, real-looking data for Harbor Self Storage (owner Joe Martinez, San
+Jose CA, Pacific timezone, full contact/hours/transfer-number/greeting details) — immediately
+surfaced that office hours, a transfer number, and a greeting preference have nowhere to be
+stored today, confirmed by actually attempting the insert against production and getting a
+genuine Postgres "column does not exist" error, not by reading the schema and assuming.
+
+**Provisioning:** organization + facility created directly against production
+(`d483ca9f-b87b-4d05-9fd8-b9bda83862b3`), timed for real: ~2 seconds of actual execution,
+confirming Phase 41's local-DB timing estimate against the real database.
+
+**Architecture question, researched before building:** before creating Harbor's Vapi assistant,
+Steve asked whether IntelliLease should use one assistant per facility or a single shared
+assistant with per-call dynamic configuration, for long-term multi-tenant fit. Researched Vapi's
+actual current docs (not memory — this project has been burned by that before) via WebFetch:
+confirmed Vapi supports leaving a phone number's `assistantId` blank and having Vapi request a
+per-call assistant config from an `assistant-request` webhook, with a hard 7.5-second response
+budget. Recommended the shared-dynamic model as the correct long-term architecture (one prompt
+source of truth, no per-facility assistant drift, naturally solves live greeting/transfer
+customization) but recommended *against* building it during this dry run — it introduces a new
+real-time dependency in the call-answering critical path with no precedent yet, and building it
+under time pressure mid-onboarding is exactly the kind of scope expansion this project has
+consistently avoided. Logged as a fully-specified roadmap item (`SELF_SERVICE_ROADMAP.md`, item
+3) with real trigger conditions instead. Proceeded with the existing, already-proven
+one-assistant-per-facility architecture for Harbor.
+
+**The real incident:** Steve bought a real Twilio number (`+14085836145`), ran
+`setup-vapi-assistant.mjs` for Harbor, and made a real test call — Vapi answered and held a
+completely normal conversation. Nothing landed in the database. Checked
+`conversation_transcripts`, `calls`, and `telephony_events` directly against production: nothing,
+anywhere. Diagnosed via Vercel's function logs (`vercel logs ... --since Nm`), not guessing:
+`Rejected Vapi webhook: missing or invalid secret header`, repeated for every message Vapi sent
+during the call. Root cause: the webhook secret configured on Harbor's Vapi assistant didn't
+match Vercel's deployed `VAPI_WEBHOOK_SECRET`. Took three full call-and-retry cycles (buy → run →
+call → check logs → adjust → call again) before it resolved — likely caused by
+`.env.production.local` being pulled from the wrong Vercel environment initially.
+
+**This is the single most important finding of the phase.** The call sounded completely normal
+to the caller the entire time — nothing about the experience suggested anything was wrong. Every
+result silently vanished with zero visible error to either the caller or the founder; the only
+evidence existed in Vercel's raw function logs. Documented in full in
+`docs/operations/FRICTION_LOG.md` (new top entry, ranked High Priority) and
+`docs/operations/TECH_DEBT_REGISTER.md`, and `FOUNDER_PROVISIONING_CHECKLIST.md`'s verification
+step was rewritten to name this exact failure mode and its fix directly, rather than a generic
+"check for typos."
+
+**Final verification, real:** once the secret was corrected, a fourth real call landed correctly
+— confirmed directly against production: `conversation_transcripts` and `calls` both show
+`facility_id = d483ca9f-b87b-4d05-9fd8-b9bda83862b3` (Harbor's, not any other facility's), and
+Harbor's real dashboard shows "1 High Priority Opportunity" / "1 Rental Request" from that real
+call. The complete lifecycle — Twilio → Vapi → transcript → analysis → dashboard — verified
+end-to-end for a second facility, added entirely through configuration, with zero application
+code changes, exactly as Phase 41 claimed but had not yet proven.
+
+**Step 4 ("give Joe the keys"):** live dashboard walkthrough at Harbor's real URL surfaced one
+new, real, high-priority gap: nothing on the dashboard shows a facility its own phone number or
+Vapi connection status. Today, "you're live" is entirely something the founder tells an operator
+— the operator has no independent way to confirm it. Logged, not built, per the phase's explicit
+rule.
+
+### Deliverables
+
+- `docs/operations/FRICTION_LOG.md` (new) — every finding ranked strictly against "would this
+  stop Joe from going live," resisting the urge to rank by how important something feels.
+- `docs/operations/FOUNDER_PROVISIONING_CHECKLIST.md` — updated with real (not estimated) timing
+  for the database step, a new named-failure-mode troubleshooting section for the webhook-secret
+  issue, and an honest two-number timing report: ~15–20 minutes clean-path vs. ~60 minutes as
+  this run actually went, with the gap fully explained rather than hidden.
+- `docs/operations/TECH_DEBT_REGISTER.md` — new entry for the silent webhook-secret failure mode.
+- `docs/architecture/SELF_SERVICE_ROADMAP.md` — item 3 rewritten with the researched
+  shared-assistant architecture recommendation and real trigger conditions.
+
+### Outcome
+
+Phase 42's own definition of done: "if someone signs up tomorrow, I know exactly what to do" —
+now true, and specifically true in a way that includes the one real failure mode this dry run
+actually hit, not just the happy path. The product's core claim (a second facility, configuration
+only, no code) held up completely under real conditions. The process didn't fully hold up on the
+first attempt — and that gap, now closed in the checklist, is worth more than a clean run would
+have been.
+
+## Customer Implementation Runbook
+
+Date: 2026-07-26
+
+### What happened
+
+Steve asked for a single canonical onboarding document — `docs/operations/CUSTOMER_IMPLEMENTATION_RUNBOOK.md`
+— written so onboarding a facility stops being something only Steve and Claude know how to do,
+and provided a detailed draft to work from.
+
+Checked the draft against the real system before writing anything down as canonical, rather than
+transcribing it directly — found three real inaccuracies:
+- The draft's example facility record included `status: active`; queried the live production
+  schema directly and confirmed `facilities` has no `status` column.
+- The draft described assistant creation, webhook URL configuration, webhook secret
+  configuration, and phone number assignment as four separate manual Vapi dashboard phases.
+  `setup-vapi-assistant.mjs` does all four in two API calls, in one script run — documenting the
+  manual version would describe a workflow nobody actually follows and would drift from the real
+  script over time.
+- The draft included a "select approved production voice" step and a "Publish" step. Neither
+  exists in the real process: the script leaves voice unset (Vapi account defaults apply, a
+  deliberate Phase 39 decision) and API-created assistants go live immediately — confirmed by
+  three real onboardings (the original pilot, and Harbor Self Storage) where no publish action
+  was ever performed.
+
+### What was written
+
+`docs/operations/CUSTOMER_IMPLEMENTATION_RUNBOOK.md` — kept the draft's genuinely good structure
+(ASCII flow diagrams, numbered phases, a troubleshooting section, a definition-of-done checklist)
+but corrected to match the real script-driven process, and made Phase 42's real webhook-secret
+incident the headline troubleshooting scenario rather than a generic warning, since it's the
+single most consequential real failure mode found onboarding a facility so far — a call that
+sounds completely normal to the caller while every result silently vanishes. Also folded in the
+architecture decision (one assistant per facility now, why, and the specified future alternative)
+and the known settings gap (office hours / transfer number / greeting) from `FRICTION_LOG.md`,
+so an engineer reading this one document gets the real current state without needing to already
+know the history behind it.
+
+Did not delete `FOUNDER_PROVISIONING_CHECKLIST.md` — kept as a companion document holding the
+detailed timing report and full incident narrative; the new runbook is the canonical
+onboarding-facing document and cross-references it rather than duplicating everything inline.
+
+### Outcome
+
+Not yet committed — awaiting Steve's review.
+
+## Phase 43 — Workspace Architecture & Customer Lifecycle
+
+Date: 2026-07-26
+
+### Goal
+
+Design, not build: Phase 42 proved a second facility can be onboarded, but exposed that the
+dashboard has no concept separating demo data, internal dogfooding, and a real customer — every
+`facilities` row is treated identically except one hardcoded `DEMO_FACILITY_ID` equality check.
+Explicit constraint: documentation and planning only, no schema/auth/routing/dashboard/existing-
+facility changes.
+
+### What was written
+
+`docs/architecture/WORKSPACE_ARCHITECTURE.md` — seven sections as specified:
+
+1. **Current architecture**, stated plainly rather than softened: there is no workspace concept
+   today, and the *only* mechanism distinguishing demo data from anything else is
+   `facility.id === DEMO_FACILITY_ID` in `dashboard/page.tsx`. Named what each of the three real
+   facilities actually is today, including the fact that neither `PILOT_FACILITY_ID` nor any
+   Harbor-specific constant exists in code anymore (both were already generic facility rows,
+   confirmed rather than assumed).
+2. **Desired architecture** — a `workspace_type` classification (`demo` / `internal` /
+   `customer`) as a column on `facilities`, not a new `workspaces` table. Explicitly reasoned
+   through and rejected the heavier table-based design: `organizations` already sits above
+   `facilities` 1:1 in practice, and a second containing layer would add real indirection to
+   express something an enum column says just as well, with no evidence of a real need for it.
+3. **Workspace lifecycle**, built on top of the already-working Phase 41/42 provisioning process
+   rather than replacing any part of it — the only new step is assigning a `workspace_type` at
+   creation time.
+4. **Data ownership** — Platform / Workspace / User tiers. Named plainly that the User tier is
+   currently empty (no user-level data exists at all, `profiles` unreferenced), rather than
+   implying more exists than does.
+5. **Roles** — Founder / Internal Admin / Customer Admin / Customer Staff, deliberately kept thin
+   and explicitly named as undeployable until real authentication exists (same underlying gap
+   already tracked in `TECH_DEBT_REGISTER.md`, described from the roles angle here).
+6. **Migration strategy** — fully additive: add the column, backfill the three real rows
+   (Lonestar → demo, Founder Pilot Facility → internal, **Harbor Self Storage → internal, not
+   customer** — worth stating explicitly, since "has a real phone number" doesn't mean "is a real
+   customer," and getting this backfill wrong would misclassify the one facility this whole
+   design exists to distinguish correctly), then only later teach the dashboard to branch on it.
+   Zero behavior change until each step is deliberately built on top.
+7. **Implementation roadmap**, split into five phases (44a–44e) ordered so production stays fully
+   working and deployable after any single one — schema+classification first (smallest real
+   value: the system *knows* what each facility is, before anything acts on it), then an isolated
+   customer empty-state UI change, then two demand-gated items (sample data, an internal listing
+   view) with explicit "don't build without evidence" trigger conditions, and real
+   authentication/roles work deliberately last and separately gated, since it's a materially
+   larger initiative that shouldn't ride along with workspace classification.
+
+### Verification
+
+No schema, code, auth, or routing changes — confirmed via `git status` showing only new/modified
+documentation. No existing facility was reclassified; all three keep behaving exactly as today.
+
+### Outcome
+
+Phase 43's own success criteria: know how workspaces should behave, how customer onboarding
+should feel, how demo data should work, how to migrate safely, and exactly what Phase 44 should
+build — all addressed, nothing implemented.
+
+**Follow-up, same day:** added a "Workspace Principles" section — six explicit rules (demo data
+must never reach a customer workspace, internal workspaces may stay messy, customer workspaces
+start empty, sample data must be optional/removable, classification is metadata not
+infrastructure, every roadmap phase must leave production deployable on its own) placed near the
+top of the document as the standard future decisions should be checked against, rather than
+reasoning left implicit across the rest of the document. Not yet committed.

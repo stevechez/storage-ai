@@ -1,11 +1,19 @@
 # Founder Provisioning Checklist
 
-Phase 41 Task 2. A real, runnable walkthrough for onboarding a second facility onto real
-telephony (not just the manual "Log a Call" flow, which `ONBOARDING_RUNBOOK.md` already covers
-and doesn't need any of this). Worked example throughout: **Joe's Self Storage**.
+Written in Phase 41 (Task 2), then actually exercised end-to-end in Phase 42 ("Become Joe") — a
+real dry run onboarding a real-looking fictional operator, Harbor Self Storage, against real
+production infrastructure. Both phases' worked examples appear below; the process itself is
+unchanged, since the dry run didn't surface any step that was wrong, only gaps in what the
+*product* can do (see `FRICTION_LOG.md`), not what this checklist says to do.
 
 This process is manual by design — see `docs/architecture/FOUNDER_DEPENDENCY_AUDIT.md`. The goal
 of this phase was making it *repeatable*, not automating it.
+
+**Known gap, confirmed for real in Phase 42:** the intake conversation with a real operator will
+surface office hours, a transfer number, and a greeting preference — none of which have anywhere
+to go yet (`facilities` has no columns for them, confirmed by actually attempting the insert and
+getting a Postgres error). This doesn't block onboarding; it just means those specifics live in
+your own notes for now, not the database. See `FRICTION_LOG.md`.
 
 ## Before you start
 
@@ -110,6 +118,27 @@ shows the values you just set.
 Only once all of this is confirmed is Joe's facility actually done — a created database row
 alone is not "provisioned."
 
+**This step is not optional, and this is not a hypothetical warning** — Phase 42's real dry run
+hit exactly the failure mode this step exists to catch. Joe's assistant can answer the phone,
+hold a completely normal-sounding conversation, and hang up cleanly, while the *entire* result
+silently vanishes — no error to the caller, no error to you. The specific cause: the webhook
+secret configured on Joe's Vapi assistant doesn't match Vercel's deployed `VAPI_WEBHOOK_SECRET`
+(easy to get wrong if `.env.production.local` was pulled from the wrong Vercel environment, or
+copied by hand with a stray space). **If step 5's query returns nothing after a real call that
+you know connected:**
+1. Check Vercel's function logs for `/api/vapi/webhook` around that timestamp
+   (`vercel logs <url> --since 5m`). `Rejected Vapi webhook: missing or invalid secret header`
+   confirms this exact issue.
+2. Re-pull the real value: `vercel env pull .env.production.local --environment=production --yes`
+   (the `--environment=production` flag matters — omitting it can silently pull a different
+   environment's value).
+3. In the Vapi Dashboard, confirm you're editing the assistant actually bound to Joe's number
+   (Phone Numbers → the number → check its assigned assistant ID matches) — not a
+   similarly-named but different assistant, which can happen if an earlier setup attempt was
+   interrupted partway through.
+4. Update that assistant's `X-Vapi-Webhook-Secret` custom header to the freshly-pulled value, and
+   test again.
+
 ## Rollback / cleanup if something goes wrong mid-setup
 
 - **Wrong number imported into the wrong assistant:** delete the phone number from Vapi's
@@ -121,21 +150,24 @@ alone is not "provisioned."
 - **Twilio number purchased but plans changed:** release it from the Twilio console — it's a
   real recurring cost sitting idle otherwise.
 
-## Provisioning time report (Phase 41 Task 5)
+## Provisioning time report
 
-Honesty about what's measured vs. estimated, rather than one falsely-precise total:
+Honesty about what's measured vs. estimated, rather than one falsely-precise total. Phase 41's
+figures were produced against local Supabase, as a proxy. Phase 42 completed the entire process
+for real, end to end, onboarding Harbor Self Storage against production — including a real
+failure and recovery, which is itself honest data, not noise to discard.
 
 | Step | Time | Basis |
 |---|---|---|
-| 1. Database (org + facility) | **~2 minutes** | **Measured.** Ran the actual insert operations against local Supabase (schema-identical to production) and timed them for real: sub-second at the database layer. The realistic 2-minute figure is the human time around that — typing facility details, reading the printed dashboard link, opening it to confirm — not raw query latency, which is negligible. |
-| 2. Twilio number purchase | ~5–7 minutes | **Estimated**, not re-measured this phase — deliberately did not purchase a second real number, since that's a real recurring cost and a decision for Steve, not something to spend speculatively just to produce a timing number. Estimate is based on the documented steps in `TWILIO_SETUP.md` (console navigation, area-code search, purchase confirmation) for someone who's done it once before. |
-| 3. Vapi assistant + number import | ~4–6 minutes | **Estimated.** `setup-vapi-assistant.mjs` itself runs in seconds (two API calls); the time is mostly the human step of reading its printed output and running the follow-up SQL update from step 3 above. Not re-measured for the same reason as Twilio — running it for real requires a real Twilio number to import. |
-| 4. Verification (real test call) | ~3–5 minutes | **Estimated**, based on the Phase 39 founder verification calls (dialing, talking, waiting a few seconds, then checking the DB and dashboard) — those calls happened for real but for the *first* facility, not a timed second one. |
-| **Total** | **~15–20 minutes** | Mixed measured/estimated — see above. |
+| 1. Database (org + facility) | **~2 minutes** | **Measured, twice now.** Two `supabase db query --linked` calls against production, ~2 seconds each of actual execution; the 2-minute figure is realistic human time around that. |
+| 2. Twilio number purchase | ~5–7 minutes | **Estimated still** — not separately timestamped, but Steve completed this for real for Harbor (`+14085836145`) without reporting difficulty, consistent with the estimate. |
+| 3. Vapi assistant + number import | ~4–6 minutes | **Estimated for the mechanical steps** (running the script, reading its output) — consistent with what happened, when it worked. |
+| 4. Verification (real test call) | ~3–5 minutes **when it works on the first try** | **Measured — and it didn't work on the first try.** The clean-path estimate holds for the call itself. What actually happened: **~45 minutes** of debugging a webhook-secret mismatch (three full retry cycles: call → check logs → adjust config → call again) before a call actually landed correctly. See `FRICTION_LOG.md`'s top entry — this is a real, now-documented failure mode, not this checklist being wrong. |
+| **Total (clean path)** | **~15–20 minutes** | Holds, if the webhook secret is pulled correctly the first time. |
+| **Total (this actual run)** | **~60 minutes** | Real, observed, including diagnosing and fixing the webhook-secret issue. The gap between these two numbers *is* the webhook-secret checklist section above — follow it and the clean-path number should hold next time. |
 
-**What this means for automation priority (feeds Task 6):** the only step that's genuinely fast
-and low-friction today is the database step, because it's the only one already scripted
-end-to-end. Steps 2–3 are where a real second onboarding will actually spend its time, and where
-automation would pay off first if this ever needs to happen often — see
-`SELF_SERVICE_ROADMAP.md`. The right next data point isn't a better estimate; it's actually
-timing a real second facility with a stopwatch the next time one gets onboarded for real.
+**What this means for automation priority (feeds `SELF_SERVICE_ROADMAP.md`):** the only step
+that's genuinely fast and now measured twice is the database step, because it's the only one
+already scripted end-to-end. Steps 2–3 are where a real onboarding will actually spend its time.
+The right next update to this table is Steve's real stopwatch numbers for Harbor's Twilio/Vapi
+setup, whenever he completes it.

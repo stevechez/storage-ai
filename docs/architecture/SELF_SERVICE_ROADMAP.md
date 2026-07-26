@@ -26,11 +26,22 @@ volume or frequency actually demands it — which hasn't happened yet.
    run (each number is a recurring charge) — should stay a deliberate, confirmed action even if
    automated, not a fire-and-forget step.
 
-3. **Automatic Vapi assistant prompt configuration per facility** — today every assistant gets
-   the same generic system prompt (`setup-vapi-assistant.mjs`'s `SYSTEM_PROMPT`). Real
-   customization (facility-specific hours, unit types, policies) would need a real per-facility
-   config source first — there isn't one yet, and inventing one before an actual operator asks
-   for a specific customization would be building for a hypothetical, not a real need.
+3. **Move from one Vapi Assistant object per facility to a single shared assistant with
+   per-call dynamic configuration**, via Vapi's `assistant-request` server webhook (confirmed
+   via Vapi's real docs, not memory: leave a phone number's `assistantId` blank and Vapi POSTs
+   your server for either an existing assistant ID or a full inline config, with a hard 7.5-second
+   response budget). This is the actual mechanism that would let a facility's greeting, prompt,
+   and (eventually) transfer number be read live from `facilities` on every call — solving two
+   Friction Log items (generic greeting, no live transfer) — plus removing the real drift problem
+   the one-assistant-per-facility model has: updating the prompt template today doesn't touch any
+   *existing* facility's already-created assistant, only future ones.
+   Real cost of doing this now: a brand-new real-time dependency in the call-answering critical
+   path that doesn't exist today — if that webhook is ever slow or down, a call gets no assistant
+   at all, a new failure mode with no precedent yet. Deliberately not built during Phase 42's
+   Harbor onboarding for exactly that reason — evaluated (see `docs/BUILD_LOG.md`'s Phase 42
+   entry) and consciously deferred, not overlooked. Worth doing once either: assistant-config
+   drift across facilities becomes a real observed problem, or a real operator specifically asks
+   for live-updatable greeting/hours/transfer behavior.
 
 4. **Webhook assignment automation** — importing a purchased number into the right Vapi assistant
    automatically once both exist, rather than as an explicit script argument. Marginal win once
