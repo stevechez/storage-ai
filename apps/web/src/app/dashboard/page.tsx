@@ -10,7 +10,7 @@ import { OutcomeSummary } from '@/components/storage/outcome-summary';
 import { OperatorSummary } from '@/components/storage/operator-summary';
 import { OperatorActions } from '@/components/storage/operator-actions';
 import { OpportunitySummary } from '@/components/storage/opportunity-summary';
-import { DemoBanner } from '@/components/storage/demo-banner';
+import { DemoBadge } from '@/components/storage/demo-badge';
 import { RevenueImpactCard } from '@/components/storage/revenue-impact-card';
 import { LogCallForm } from '@/components/storage/log-call-form';
 import { CustomerReadinessCard } from '@/components/storage/customer-readiness-card';
@@ -44,13 +44,14 @@ export default async function DashboardPage({
 	// Phase 44b: a customer workspace with no activity yet gets a readiness
 	// state instead of inheriting the generic "nothing here" empty state —
 	// demo and internal workspaces are completely unaffected by this branch.
+	const isDemoWorkspace = facility.workspace_type === 'demo';
 	const isCustomerWorkspace = facility.workspace_type === 'customer';
 	const phoneConnected = Boolean(facility.twilio_phone_number && facility.vapi_assistant_id);
 	const isNewCustomerWorkspace = isCustomerWorkspace && followUps.length === 0;
 
 	return (
 		<main className="max-w-5xl mx-auto p-8">
-			{facility.id === DEMO_FACILITY_ID ? <DemoBanner facilityName={facility.name} /> : null}
+			{isDemoWorkspace ? <DemoBadge /> : null}
 
 			<h1 className="text-4xl font-bold">{facility.name}</h1>
 
@@ -65,9 +66,14 @@ export default async function DashboardPage({
 			{/* Phase 44a verification only — remove once workspace_type is used for real behavior (Phase 44b+) */}
 			<p className="text-xs text-gray-300 mb-6">Workspace: {facility.workspace_type}</p>
 
-			<section className="mb-10">
-				<LogCallForm facilityId={facility.id} phoneConnected={isCustomerWorkspace && phoneConnected} />
-			</section>
+			{/* Phase 44c: manual call logging is disabled for the demo workspace — this is the
+			    exact path that already contaminated it once (a real test call logged directly
+			    against the demo facility). Nothing to disable for internal/customer workspaces. */}
+			{isDemoWorkspace ? null : (
+				<section className="mb-10">
+					<LogCallForm facilityId={facility.id} phoneConnected={isCustomerWorkspace && phoneConnected} />
+				</section>
+			)}
 
 			{isNewCustomerWorkspace ? null : (
 				<>

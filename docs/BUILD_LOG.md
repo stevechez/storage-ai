@@ -1797,3 +1797,76 @@ identical to before this phase).
 
 A prospective customer with zero calls sees readiness, not developer artifacts or fake activity;
 every other workspace type is provably unaffected. Not yet committed.
+
+## Phase 44c — Demo Workspace
+
+Date: 2026-07-26
+
+### Goal
+
+A permanent, polished demonstration workspace — a repeatable sales asset, not an evolving
+development environment. Curated (not randomly generated) demo data, protected against
+contamination, resettable in one action.
+
+### A real incident found before any of this was built
+
+Checked the demo facility's actual data before designing anything, rather than assuming it was
+still pristine. It wasn't: alongside 10 genuinely curated seed calls (a believable mix of unit
+sizes, urgencies, and outcomes from earlier phases), there was an 11th row — a real "Log a Call"
+test I'd submitted against the demo facility during the Phase 40.5 hero-GIF recording exercise.
+Exactly the contamination this phase exists to prevent, already having happened once. Cleaned it
+up as the first concrete step, not just built protections against it happening again.
+
+### Design decision: keep a disclosure, but redesign it
+
+The phase brief said "no demo mode banners, no fake-looking labels." Flagged this before
+building: the existing `DemoBanner` was added deliberately (a real bug was later found and fixed
+ensuring it only ever showed on the actual demo facility), and removing all disclosure entirely
+means a forwarded screenshot, recording, or shared link would carry zero indication it's sample
+data. Steve's answer: keep a real disclosure, but make it tasteful rather than developer-sounding
+— like Salesforce/Stripe demo environments, clearly labeled without looking like a warning.
+
+### What changed
+
+- **`components/storage/demo-badge.tsx`** (new) replaces `demo-banner.tsx` (deleted) — a compact
+  pill ("Demo Workspace · Sample leasing activity for demonstration purposes") instead of the old
+  amber alert box. Gated on `workspace_type === 'demo'` (Phase 44a's classification) rather than
+  the old `facility.id === DEMO_FACILITY_ID` check — more correct now that the classification
+  exists as the actual source of truth.
+- **`dashboard/page.tsx`** — manual "Log a Call" is now hidden entirely for the demo workspace.
+  This is the exact path that caused the real contamination above; there is no longer any UI way
+  to add a call to the demo facility.
+- **`scripts/reset-demo-workspace.mjs`** (new) — deletes all calls against the demo facility and
+  reinserts the same 10 curated calls found above, now the canonical, versioned dataset (defined
+  once, in this script, as `CANONICAL_CALLS`). Deliberately a CLI script, not an in-app "Reset
+  Demo" button: the dashboard has no authentication, and the demo link is specifically the one
+  meant to be shared during sales conversations — an in-app destructive control would be
+  triggerable by anyone holding that link. A terminal command requiring real production
+  credentials is the safe equivalent of a developer-only action in a system with no roles to
+  enforce that boundary any other way.
+- **Timestamps computed relative to script run time, not fixed calendar dates** — found a real
+  reason this matters while designing the script, not just a tidiness preference:
+  `summarizeRecentOutcomes()` uses an actual rolling 24-hour window for "Recent Results," so
+  replaying the original fixed 2026-07-21–24 dates (as the original migrations did) means that
+  section would show zero activity today, and increasingly stale results the longer the demo
+  goes unreset. Recomputing each call's age from "now" at run time is what makes this genuinely
+  repeatable.
+- **`docs/operations/DEMO_WORKSPACE.md`** (new) — how the workspace is protected, the canonical
+  dataset and why its timestamps are relative, how and when to reset it, and how to change the
+  story deliberately if it's ever edited.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46) all clean. Cleaned up the real contamination
+directly against production (didn't have `.env.production.local` in this environment to run the
+new script literally, so performed the equivalent reset via direct SQL, using the exact same
+canonical dataset and relative-timestamp logic) and confirmed the demo dashboard shows a
+believable, consistent story (7 opportunities, 4 high priority, 1 recently converted) with no
+trace of the earlier test call. Confirmed the new badge and hidden "Log a Call" render correctly
+against the local dev server (not yet deployed to production — this phase's code changes are
+still local, only the data cleanup reached production directly).
+
+### Outcome
+
+The demo workspace is now curated, protected, and resettable — a dependable sales asset rather
+than an artifact of whatever testing happened to touch it most recently. Not yet committed.
