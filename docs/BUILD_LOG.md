@@ -1745,3 +1745,55 @@ webhook call-routing path — nothing in that logic was touched, only an unrelat
 
 The system now knows what each facility is; nothing yet acts on that knowledge, exactly as
 specified. Production behavior is unchanged — confirmed, not assumed. Not yet committed.
+
+## Phase 44b — Customer Workspace Experience
+
+Date: 2026-07-26
+
+### Goal
+
+The first visible behavior driven by `workspace_type` (Phase 44a). A `customer` workspace with
+no activity yet should communicate readiness ("your assistant is ready") instead of inheriting
+the same generic empty state as an internal or demo workspace. Presentation only — no workspace
+switching, no auth, no sample-data generation, no schema changes.
+
+### What changed
+
+New `components/storage/customer-readiness-card.tsx` (reuses the existing `Card` component,
+per the phase's "do not duplicate" instruction), shown on `/dashboard` only when
+`workspace_type === 'customer'` **and** the facility has zero calls ever — a brand-new customer
+workspace, specifically. Reads `facilities.twilio_phone_number` and `vapi_assistant_id` (both
+already existing, no schema change) to decide between two honest states: `🟢 Online` with the
+real phone number and "Your assistant is ready for its first customer" when both are set, or a
+plain `Not yet connected` / "Your workspace is set up — telephony is still being connected" when
+they aren't — deliberately not claiming "Online" before it's actually true.
+
+`LogCallForm` gained an optional `phoneConnected` prop (default `false`, so every existing call
+site keeps its current behavior unless explicitly opted in) that swaps its static "No phone
+system connected yet" copy for "Your AI Leasing Assistant is connected and ready to receive
+calls" — passed as `isCustomerWorkspace && phoneConnected` from the dashboard, so this messaging
+change only ever applies to `customer` workspaces, never demo or internal, regardless of whether
+they have real telephony (Harbor Self Storage has a real phone connected but is classified
+`internal`, and correctly keeps the old copy).
+
+The five populated-dashboard sections (Good Morning, Today's Actions, Active Opportunities,
+Recent Results, Revenue Impact) are skipped entirely for a brand-new customer workspace, replaced
+by the single readiness card — once that workspace has any real call, `followUps.length === 0`
+is no longer true and every one of those sections renders exactly as it does today, completely
+untouched.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (46/46) all clean. Verified all four real scenarios
+directly against the local dev server, not just reasoned about — created and then cleaned up
+temporary local test facilities for each case: a `customer` workspace with no phone (correctly
+showed "Not yet connected"), a `customer` workspace with a phone connected (correctly showed
+"Online" with the real number and updated `LogCallForm` copy), an `internal` workspace with zero
+calls (confirmed the *old* generic empty state still renders, unchanged), and the real local demo
+facility (confirmed completely unaffected — banner, generic copy, and populated sections all
+identical to before this phase).
+
+### Outcome
+
+A prospective customer with zero calls sees readiness, not developer artifacts or fake activity;
+every other workspace type is provably unaffected. Not yet committed.

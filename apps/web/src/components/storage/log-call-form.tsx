@@ -6,15 +6,22 @@ import { Card } from './card';
 
 const initialState: LogCallFormState = { status: 'idle' };
 
-export function LogCallForm({ facilityId }: { facilityId: string }) {
+export function LogCallForm({
+	facilityId,
+	phoneConnected = false,
+}: {
+	facilityId: string;
+	phoneConnected?: boolean;
+}) {
 	const [state, formAction, isPending] = useActionState(logCallAction, initialState);
 
 	return (
 		<Card>
 			<div className="text-sm text-gray-500 mb-1">Log a Call</div>
 			<p className="text-sm text-gray-500 mb-4">
-				No phone system connected yet — until there is, log a call here and it runs through the same
-				analysis as everything else on this page.
+				{phoneConnected
+					? 'Your AI Leasing Assistant is connected and ready to receive calls. You can also log a call manually below.'
+					: 'No phone system connected yet — until there is, log a call here and it runs through the same analysis as everything else on this page.'}
 			</p>
 
 			<form action={formAction} className="space-y-3">
