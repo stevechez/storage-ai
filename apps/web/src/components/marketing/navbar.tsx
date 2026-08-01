@@ -25,7 +25,7 @@ export function Navbar() {
 				href="/#early-access"
 				className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-concrete transition-colors hover:bg-signal"
 			>
-				Join early access
+				Request Founder Pilot
 			</a>
 		</nav>
 	);

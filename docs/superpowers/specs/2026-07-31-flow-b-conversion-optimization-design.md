@@ -1,7 +1,8 @@
 # flow-b: Conversion Optimization Pass (9.9–10.0 Target)
 
 Date: 2026-07-31
-Status: Approved (two review rounds), not yet implemented
+Status: Implemented and promoted to production (Phase 48, `docs/BUILD_LOG.md`). `/flow-b` is
+retired; this content now lives at `/`. Not yet committed.
 
 ## Goal
 

@@ -1,5 +1,5 @@
 const FOUNDER_PROGRAM_FEATURES = [
-	'Setup assistance',
+	'We set it up for you',
 	'Direct founder access',
 	'Help evaluating missed call opportunities',
 	'Locked-in founder pricing',
@@ -21,9 +21,10 @@ export function PricingSection() {
 					A founder pilot, not just a free trial.
 				</h2>
 				<p className="mx-auto mt-4 max-w-2xl text-lg text-steel">
-					This isn&apos;t &quot;try the software for a month.&quot; It&apos;s a chance to find out,
-					with direct help from the person building it, whether IntelliLease actually surfaces rental
-					opportunities you&apos;d otherwise miss — before you commit to anything long-term.
+					Forward your number, send your price sheet, and you&apos;re live this afternoon. This
+					isn&apos;t &quot;try the software for a month.&quot; It&apos;s finding out — with direct
+					help from the person building it — whether this actually captures rentals you&apos;d
+					otherwise miss, without adding a single hire.
 				</p>
 
 				<div className="mt-12 grid gap-6 text-left sm:grid-cols-2">
@@ -47,7 +48,7 @@ export function PricingSection() {
 							href="#early-access"
 							className="mt-8 block rounded-full bg-ink px-6 py-3 text-center text-sm font-semibold text-concrete transition-colors hover:bg-signal"
 						>
-							Apply for the founder program
+							Request Founder Pilot
 						</a>
 					</div>
 
@@ -65,7 +66,7 @@ export function PricingSection() {
 							href="#early-access"
 							className="mt-8 block rounded-full border border-ink px-6 py-3 text-center text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-concrete"
 						>
-							Talk to us
+							Talk About My Facility
 						</a>
 					</div>
 				</div>
@@ -81,15 +82,19 @@ export function PricingSection() {
 							</li>
 						))}
 					</ul>
-					<p className="mt-4 text-sm text-steel">
+					<p className="mt-5 rounded-xl border border-signal/30 bg-signal/10 px-4 py-3 text-base font-semibold text-ink">
 						If the answers don&apos;t show real value, don&apos;t continue. That&apos;s the point of a
 						pilot.
 					</p>
 				</div>
 
 				<p className="mx-auto mt-10 max-w-xl text-sm text-steel">
-					One missed rental can represent thousands of dollars in lifetime revenue. IntelliLease is
-					designed to help operators capture opportunities they never knew they lost.
+					One missed rental costs you real money today — not just once, but every month a unit sits
+					empty. IntelliLease exists to make sure you stop losing calls before you ever notice
+					them.
+				</p>
+				<p className="mx-auto mt-4 max-w-xl text-lg font-bold text-ink">
+					Don&apos;t hire another employee until you know whether IntelliLease can do the job first.
 				</p>
 			</div>
 		</section>

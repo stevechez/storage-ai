@@ -1,7 +1,3 @@
-// Phase 46a: one customer story, not a four-step architecture diagram. Each visual mirrors a
-// real product surface (the transcript exchange, the opportunity card's actual fields) rather
-// than an invented mockup — see docs/BUILD_LOG.md for what each panel is drawn from.
-
 function StepEyebrow({ number, title }: { number: string; title: string }) {
 	return (
 		<div className="flex items-center gap-3">
@@ -23,11 +19,11 @@ export function HowItWorks() {
 	return (
 		<section id="how-it-works" className="bg-concrete px-6 py-28 sm:px-10 lg:px-16">
 			<div className="mx-auto max-w-3xl">
-				<p className="font-mono text-xs tracking-[0.2em] text-steel uppercase">See what happens</p>
+				<p className="font-mono text-xs tracking-[0.2em] text-steel uppercase">Here&apos;s what changes for you</p>
 				<h2 className="mt-4 font-display text-4xl font-black tracking-tight text-ink">
-					See what happens after a renter calls.
+					The phone rings. You don&apos;t miss the rental.
 				</h2>
-				<p className="mt-3 text-lg text-steel">One phone call. Four simple steps.</p>
+				<p className="mt-3 text-lg text-steel">One phone call. Zero extra hires.</p>
 
 				<div className="mt-16 space-y-2">
 					{/* Step 1 — the call comes in */}
@@ -51,7 +47,7 @@ export function HowItWorks() {
 
 					{/* Step 2 — the assistant answers */}
 					<div>
-						<StepEyebrow number="02" title="IntelliLease answers instantly." />
+						<StepEyebrow number="02" title="We answer — instantly." />
 						<div className="mt-4 ml-9 space-y-2 rounded-2xl border border-steel/20 bg-white p-5">
 							<p className="text-sm text-steel">
 								<span className="font-mono text-xs tracking-wide text-signal uppercase">Assistant</span>
@@ -70,9 +66,9 @@ export function HowItWorks() {
 
 					{/* Step 3 — real fields from the actual OpportunityCard (components/storage/opportunity-card.tsx) */}
 					<div>
-						<StepEyebrow number="03" title="The conversation appears in your dashboard." />
+						<StepEyebrow number="03" title="You know exactly who to call back first." />
 						<div className="mt-4 ml-9 rounded-2xl border border-steel/20 bg-white p-5">
-							<p className="font-mono text-xs tracking-wide text-steel uppercase">Rental Opportunity</p>
+							<p className="font-mono text-xs tracking-wide text-steel uppercase">Today&apos;s follow-ups</p>
 							<dl className="mt-3 space-y-2 text-sm">
 								<div>
 									<dt className="text-steel">Customer Need</dt>
@@ -91,7 +87,7 @@ export function HowItWorks() {
 									<dd className="font-semibold text-signal">High</dd>
 								</div>
 								<div>
-									<dt className="text-steel">Recommended Action</dt>
+									<dt className="text-steel">What to do</dt>
 									<dd className="font-semibold text-ink">Call customer immediately.</dd>
 								</div>
 							</dl>
@@ -104,7 +100,7 @@ export function HowItWorks() {
 					<div>
 						<StepEyebrow number="04" title="You follow up and rent the unit." />
 						<div className="mt-4 ml-9 rounded-2xl bg-ink p-5 text-concrete">
-							<p className="font-mono text-xs tracking-wide text-lamp uppercase">Status: Converted</p>
+							<p className="font-mono text-xs tracking-wide text-lamp uppercase">Result</p>
 							<p className="mt-3 text-sm text-concrete/80">
 								Called back within the hour. Renter signed for the 10×10 unit, moving in this weekend.
 							</p>

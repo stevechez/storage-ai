@@ -2171,3 +2171,62 @@ untouched — `app/page.tsx` and `app/actions.ts` have no diff.
 `/flow-b` is live in local dev and its migration is on the remote database, ready to serve as the
 flow-B variant once deployed. Founder Pilot conversion is comparable today via a `source` filter
 on `early_access_signups`, with no new tooling required. Not yet committed.
+
+## Phase 48 — Promote flow-b to production, archive flow A
+
+Date: 2026-07-31
+
+### Goal
+
+The user judged flow-b (Phase 47, further refined by the conversion-optimization pass —
+`2026-07-31-flow-b-conversion-optimization-design.md`) the clear winner over the control
+homepage and asked to promote it to `/`, archiving the old homepage. This phase does two things:
+(1) implements the conversion-optimization spec's copy into flow-b, and (2) promotes that
+finished page to the production routes, retiring `/flow-b`.
+
+### What changed
+
+**Optimization pass implemented** — all section-by-section changes from
+`2026-07-31-flow-b-conversion-optimization-design.md` applied to the (then still forked)
+`components/marketing/flow-b/*` files: two-line hero subhead dropping internal "qualified
+renter" language, the single site-wide "digital leasing manager" mention in the hero body, an
+extended founder-note card (placeholder avatar — no photo file exists yet, a real photo is a
+manual swap-in later) embedded in the trust section, renamed CTAs throughout ("Request Founder
+Pilot," "Talk About My Facility," "Estimate My Lost Rentals"), and a new `tomorrow-section.tsx`
+("What changes tomorrow?") inserted between the calculator and pricing.
+
+**Promotion** — `git mv` moved each `components/marketing/flow-b/*.tsx` onto its production
+counterpart (overwriting the old flow-A file), with in-page hrefs rewritten from `/flow-b/#section`
+back to `/#section`. `app/page.tsx` was replaced with flow-b's section composition (now including
+`TomorrowSection`). The two flow-b server actions were folded into `app/actions.ts`:
+`submitFlowBFounderSignup` became `submitEarlyAccessSignup` again (replacing the original
+function, `source` left `null` exactly as before — the A/B distinction no longer applies once
+there's only one homepage), and `submitMissedRevenueLead` moved over with its source value
+shortened from `'flow-b-calculator'` to `'calculator'`. `app/flow-b/` and the now-empty
+`components/marketing/flow-b/` directory were deleted entirely.
+
+The old flow-A homepage is not preserved as a live route — it's recoverable from git history at
+commit `17268eb54aa8b51e69cce9e443d57bd01c0d9f31` (last commit before this phase), which was the
+user's explicit choice over keeping a `/legacy` route with no real use case.
+
+One incidental fix: the promoted `navbar.tsx` lost the original `/* eslint-disable
+@next/next/no-html-link-for-pages */` comment during the earlier fork (`/flow-b/#section` hrefs
+didn't trigger that rule; `/#section` hrefs do) — restored during verification.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, full test suite (49/49) all clean after both the optimization pass and
+the promotion. Confirmed live against the local dev server: `/` renders the full promoted page
+(hero, founder-note card, new timeline section, restyled pricing callout), `/flow-b` now 404s,
+and both forms (`submitEarlyAccessSignup`, `submitMissedRevenueLead`) were exercised end-to-end
+through the actual browser — confirmed via direct REST query against the local database that the
+founder-pilot row landed with `source: null` (matching pre-flow-b behavior) and the calculator
+row landed with `source: 'calculator'` and the expected formatted `message`. Test rows removed
+afterward. Grep-confirmed "digital leasing manager" appears exactly once across
+`components/marketing/*`.
+
+### Outcome
+
+`/` now serves the page the user judged the clear winner; `/flow-b` and the A/B-test-specific
+`source` values (`flow-b-founder-pilot`, `flow-b-calculator`) are retired. The old flow-A
+homepage remains fully recoverable from git history but is no longer live. Not yet committed.

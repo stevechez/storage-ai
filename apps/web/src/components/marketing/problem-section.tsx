@@ -23,9 +23,9 @@ export function ProblemSection() {
 				</h2>
 
 				<p className="mx-auto mt-8 max-w-xl text-lg text-concrete/70">
-					You never see that call as a loss — it just never shows up as anything. No missed-call
-					badge on a revenue report. No unit rented. It&apos;s the rental you didn&apos;t know you
-					lost, and it happens every week that phone isn&apos;t answered by someone who can say yes.
+					You never see that call as a loss. No missed-call badge. No unit rented. Just a renter
+					who called the next facility instead — and you&apos;ll never know how many times it
+					happened this month.
 				</p>
 			</div>
 		</section>

@@ -1,7 +1,8 @@
 # flow-b: Grand Slam Offer A/B Variant
 
 Date: 2026-07-31
-Status: Implemented (Phase 47, `docs/BUILD_LOG.md`), not yet committed or deployed
+Status: Implemented (Phase 47) and promoted to production (Phase 48, `docs/BUILD_LOG.md`).
+`/flow-b` is retired; this content now lives at `/`. Not yet committed.
 
 ## Goal
 

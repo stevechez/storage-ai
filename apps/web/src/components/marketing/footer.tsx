@@ -40,7 +40,7 @@ export function Footer() {
 					<div className="col-span-2 sm:col-span-1">
 						<p className="font-display text-lg font-bold text-ink">IntelliLease</p>
 						<p className="mt-1 text-sm text-steel">
-							A digital leasing manager for independent self-storage facilities.
+							Helping independent self-storage operators capture rentals they&apos;d otherwise miss.
 						</p>
 					</div>
 

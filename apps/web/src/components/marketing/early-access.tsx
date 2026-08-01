@@ -1,9 +1,9 @@
 'use client';
 
 import { useActionState } from 'react';
-import { submitEarlyAccessSignup, type EarlyAccessFormState } from '@/app/actions';
+import { submitEarlyAccessSignup, type FormState } from '@/app/actions';
 
-const initialState: EarlyAccessFormState = { status: 'idle' };
+const initialState: FormState = { status: 'idle' };
 
 export function EarlyAccess() {
 	const [state, formAction, isPending] = useActionState(submitEarlyAccessSignup, initialState);
@@ -13,12 +13,9 @@ export function EarlyAccess() {
 			<div className="mx-auto max-w-xl text-center">
 				<p className="font-mono text-xs tracking-[0.2em] text-signal uppercase">Get early access</p>
 				<h2 className="mt-4 font-display text-4xl font-black tracking-tight sm:text-5xl">
-					Be one of the first facilities to try it.
+					Live this afternoon. No new hire required.
 				</h2>
-				<p className="mt-4 text-concrete/70">
-					Tell us about your facility and we&apos;ll reach out — no sales pitch, just a real
-					conversation about whether this fits how you run things.
-				</p>
+				<p className="mt-4 text-concrete/70">We&apos;ll talk about your facility. Not sell you software.</p>
 
 				{state.status === 'success' ? (
 					<p className="mt-10 rounded-xl border border-signal/40 bg-signal/10 px-6 py-5 text-lg font-semibold text-concrete">
@@ -40,7 +37,7 @@ export function EarlyAccess() {
 							disabled={isPending}
 							className="w-full rounded-full bg-signal px-7 py-3 text-sm font-semibold text-ink transition-colors hover:bg-lamp disabled:opacity-60"
 						>
-							{isPending ? 'Sending…' : 'Request early access'}
+							{isPending ? 'Sending…' : 'Request Founder Pilot'}
 						</button>
 					</form>
 				)}
