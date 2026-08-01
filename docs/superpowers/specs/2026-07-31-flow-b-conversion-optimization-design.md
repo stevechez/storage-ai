@@ -1,7 +1,7 @@
 # flow-b: Conversion Optimization Pass (9.9–10.0 Target)
 
 Date: 2026-07-31
-Status: Approved, not yet implemented
+Status: Approved (two review rounds), not yet implemented
 
 ## Goal
 
@@ -14,6 +14,13 @@ emotional impact, without adding complexity.
 
 Core principle driving every rewrite below: every sentence answers "why should I care?" from the
 owner's side, not "what does the product do?" from the software's side.
+
+Read end to end, the page's narrative shifted over these two review rounds from "AI answers your
+phone" to something closer to peace of mind: Hero (I won't miss rentals) → Problem (I didn't know
+what I was losing) → How it works (I know exactly what to do next) → Trust (it won't guess) →
+Calculator (here's what missed calls are costing me) → Tomorrow (here's what my life looks like)
+→ Pricing (let's prove it before you commit). Each section-level change below should be read
+against that arc, not just as an isolated copy swap.
 
 ## Non-goals
 
@@ -46,9 +53,11 @@ Headline — unchanged (per explicit instruction not to touch it):
 > Capture more rentals — without hiring another employee.
 
 Subheadline — two short lines, newspaper-headline scannability, replacing the current single
-paragraph:
+paragraph. ("Qualified renter" is internal language an owner wouldn't say — line 2 drops it. Both
+of the user's suggested phrasings opened with "Wake up," which would repeat line 1's opener; line
+2 below keeps their exact wording minus that redundant lead-in.):
 > Wake up knowing every after-hours caller got an answer.
-> Every qualified renter is waiting in your morning follow-up list.
+> Your highest-priority callbacks are already waiting.
 
 Body paragraph — the one and only "digital leasing manager" mention on the page, written as a
 confident statement, not a tentative metaphor ("think of it as..." is explicitly rejected):
@@ -90,8 +99,10 @@ Subhead unchanged: "One phone call. Zero extra hires."
 - Step 01 — unchanged (already concrete, no software language: "A renter calls your facility.").
 - Step 02 title → **"We answer — instantly."** (dialogue content unchanged)
 - Step 03 title → **"You know exactly who to call back first."** Panel label "Rental Opportunity"
-  → **"Your morning follow-up"**; field "Recommended Action" → **"What to do"** (value unchanged:
-  "Call customer immediately.")
+  → **"Today's follow-ups"** (noun-label, kept distinct from the step title's sentence phrasing
+  rather than "Who to call today," which would repeat "who to call" from the title right above
+  it); field "Recommended Action" → **"What to do"** (value unchanged: "Call customer
+  immediately.")
 - Step 04 — title unchanged (already owner-as-hero: "You follow up and rent the unit."). Label
   "Status: Converted" → **"Result"**.
 
@@ -127,10 +138,16 @@ by an actual founder-note card (below) instead of just asserting it in prose.
 **Founder note (new, embedded in this section, not a standalone section):**
 A small card below the honesty paragraph: a placeholder avatar (styled circle/rounded-square with
 initials "S" — no photo file exists in the repo; the real photo is a manual swap-in later, not
-part of this implementation), name "Steve," role "Founder," and this bio verbatim:
+part of this implementation), name "Steve," role "Founder," and this bio verbatim (extended per
+the user's second-round feedback — the closing "if it isn't, I'll tell you" is the strongest trust
+line on the page):
 > Hi, I'm Steve. I built IntelliLease because too many independent storage owners lose rentals
-> simply because nobody can answer every call. During the Founder Pilot you'll work directly with
-> me.
+> simply because nobody can answer every call after hours.
+>
+> During the Founder Pilot you'll work directly with me. We'll review your calls together and
+> decide whether IntelliLease is actually creating value for your facility.
+>
+> If it isn't, I'll tell you.
 
 ### Lost-revenue calculator (`roi-section.tsx`)
 
@@ -152,9 +169,13 @@ section's numbered-card grid:
 
 | Card | Line | Sub-line |
 |---|---|---|
-| Tonight | Every caller gets an answer. | No voicemail. No hoping they call back. |
+| Tonight | Every after-hours caller gets an answer. | No voicemail. No hoping they call back. |
 | Tomorrow Morning | You know exactly who wants a unit. | Your follow-up list is already prioritized. |
 | Next Month | You know whether IntelliLease is paying for itself. | Real numbers, not a guess. |
+
+("Every after-hours caller gets an answer" — picked over "hears a real answer" so it echoes the
+Hero subhead's "after-hours caller" phrase directly, reinforcing the same problem across
+sections.)
 
 Added to `app/flow-b/page.tsx` between `<RoiSection />` and `<PricingSection />`.
 
@@ -166,9 +187,12 @@ Body paragraph trimmed for length, same meaning:
 > whether this actually captures rentals you'd otherwise miss, without adding a single hire.
 
 Bottom paragraph reworked to drop "lifetime revenue" language, for consistency with the
-calculator's monthly framing:
+calculator's monthly framing, followed by a short bold closing line — the section's (and the
+page's) final emotional impression, per the user's second-round feedback:
 > One missed rental costs you real money today — not just once, but every month a unit sits
 > empty. IntelliLease exists to make sure you stop losing calls before you ever notice them.
+>
+> **Don't hire another employee until you know whether IntelliLease can do the job first.**
 
 "If the answers don't show real value, don't continue" — pulled out of the "Your first month" card
 as a visually distinct emphasized callout (larger/bolder, not paragraph text) — flagged by the
