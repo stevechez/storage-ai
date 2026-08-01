@@ -2113,3 +2113,61 @@ Grepped for any other reference to the old step names or section copy — none f
 The homepage now shows one real, followable customer journey instead of describing the system's
 internal workflow — and every visual in it represents something the product actually does today.
 Not yet committed.
+
+## Phase 47 — flow-b: Grand Slam Offer A/B Variant
+
+Date: 2026-07-31
+
+### Goal
+
+Stand up a second marketing landing page at `/flow-b` testing a rewritten offer (bigger dream
+outcome, higher certainty, faster time-to-value, lower perceived effort) against the live
+homepage at `/`, without changing `/` at all. Full design in
+`docs/superpowers/specs/2026-07-31-flow-b-grand-slam-offer-design.md`.
+
+### What changed
+
+New route `app/flow-b/page.tsx` composing ten forked sections in `components/marketing/flow-b/`
+(navbar, hero, problem, how-it-works, integration-confidence, trust, roi/calculator, pricing,
+early-access, footer) — one file per section, mirroring `components/marketing/` 1:1 so `/`
+required zero changes. `metadata.robots` set to `{ index: false, follow: false }` so the
+experiment page doesn't get indexed. Nav/footer in-page anchors rewritten from `/#section` to
+`/flow-b/#section` so they don't silently bounce visitors back to the control homepage.
+
+Copy changes follow the spec's dream-outcome/certainty/speed/effort framing throughout — notably
+"capture more rentals without hiring another employee" in the hero and a certainty-stacked
+checklist in the trust section — while deliberately holding pricing constant ($99 first month /
+$199/mo) since the experiment tests messaging, not price.
+
+New lost-revenue calculator (`roi-section.tsx` fork) computes an instant client-side estimate via
+`lib/storage/missed-revenue.ts` (`estimateLostRevenue`, covered by a vitest test), then offers a
+"get the full breakdown" lead form. New `app/flow-b/actions.ts` holds two server actions,
+separate from `app/actions.ts`: `submitFlowBFounderSignup` (source: `'flow-b-founder-pilot'`) and
+`submitMissedRevenueLead` (source: `'flow-b-calculator'`, recomputes the estimate server-side
+from raw inputs rather than trusting the client total, folds the calculator inputs and
+`biggest_challenge` selection into the existing `message` column). One additive migration,
+`add_early_access_signups_source.sql`, adds a nullable `source` column to
+`early_access_signups` — no default, no change to existing rows or to `submitEarlyAccessSignup`.
+
+### Verification
+
+`tsc --noEmit`, `eslint .`, and the full test suite (49/49 across 11 files) all clean. Migration
+applied to both the remote project and the local Supabase stack (`supabase db push` /
+`supabase migration up` — the local stack was already running from a prior session and needed
+the new migration applied explicitly; `supabase start` alone doesn't pick up new migration files
+on an already-initialized local DB). Confirmed live against the local dev server: `/flow-b`
+renders all ten sections, robots meta is `noindex, nofollow`, in-page nav/footer links resolve to
+`/flow-b/#section`. Calculator verified against the spec's own worked example (8 missed calls / 3
+likely renters / $180 → $540/mo, $6,480/year) and re-verified live-recomputing correctly on input
+change (5 renters / $180 → $900/mo, $10,800/year). Both `submitFlowBFounderSignup` and
+`submitMissedRevenueLead` exercised end-to-end through the actual browser forms; confirmed via
+direct REST query against the local database that both rows landed with the correct `source`
+values (`flow-b-founder-pilot`, `flow-b-calculator`) and that the calculator submission's
+`message` column contains the formatted breakdown. Test rows removed afterward. `/` itself
+untouched — `app/page.tsx` and `app/actions.ts` have no diff.
+
+### Outcome
+
+`/flow-b` is live in local dev and its migration is on the remote database, ready to serve as the
+flow-B variant once deployed. Founder Pilot conversion is comparable today via a `source` filter
+on `early_access_signups`, with no new tooling required. Not yet committed.

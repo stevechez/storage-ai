@@ -1,7 +1,7 @@
 # flow-b: Grand Slam Offer A/B Variant
 
 Date: 2026-07-31
-Status: Approved, not yet implemented
+Status: Implemented (Phase 47, `docs/BUILD_LOG.md`), not yet committed or deployed
 
 ## Goal
 
@@ -15,6 +15,25 @@ restructuring, 30-day outreach plan, buyer-objection rewrites, price-ladder stra
 Parts 1 (offer) and 3 (objection-handling copy) drive actual page content. Part 2 (30-day
 outreach plan) and Part 4 (broader SaaS price-ladder strategy) are sales/marketing operations,
 not page content — nothing from them gets built as a section.
+
+## Success criteria
+
+Flow B is considered successful if it produces a meaningfully higher visitor-to-lead conversion
+rate than the control while maintaining lead quality.
+
+**Primary metric** — Founder Pilot signup conversion rate, compared between `source =
+'flow-b-founder-pilot'` and the control's signups. Measurable today with existing
+infrastructure: it's a query over `early_access_signups`, no new tooling required.
+
+**Secondary metrics (directional, not yet instrumented)** — calculator completion rate,
+calculator → lead form conversion, scroll depth to pricing, CTA click-through rate. This
+codebase has no analytics/event-tracking tool today (no PostHog, GA, Plausible, etc.), so none
+of these are measurable as stated without adding one. That's a real gap, not a detail to gloss
+over — but adding an analytics dependency isn't part of this spec. `submitMissedRevenueLead`'s
+row count (leads captured via the calculator) is the one secondary signal available for free
+from the `source` tagging already in this design. If click/scroll-level metrics turn out to
+matter, that's a separate, explicit follow-up decision (which tool, what it costs, what it
+tracks) — not something to bolt on silently here.
 
 ## Non-goals
 
@@ -48,8 +67,14 @@ not page content — nothing from them gets built as a section.
 navigate visitors back to the live homepage. `submitFlowBFounderSignup`'s form action lives in
 the forked `early-access.tsx`, not in the nav.
 
+This experiment intentionally rewrites messaging but should preserve the existing visual design,
+spacing, typography, and overall layout wherever practical, so the primary variable under test is
+the offer rather than the presentation.
+
 **Hero** — dream outcome upgraded from "never miss a call" to "capture more rentals without
-hiring another employee" / "wake up to reservations you'd have lost overnight." Certainty added
+hiring another employee" / "wake up to rental opportunities you would have missed overnight."
+(Not "reservations" — the product answers calls, qualifies renters, and notifies staff; it
+doesn't create reservations automatically, and the copy shouldn't imply it does.) Certainty added
 (every call answered, logged, summarized; escalates to you if the assistant isn't confident).
 Speed: "Live this afternoon." plus a second line underneath connecting speed to outcome: "Your
 next missed call could become your next rental." Effort: "Forward your number. Send your price
